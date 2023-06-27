@@ -3,7 +3,7 @@
   "profiles": {
     "FlatCam": {
       "commandName": "Project",
-      "commandLineArgs": "ger c:\\0pcb\\sdcard\\",
+      "commandLineArgs": "ger -t 1 c:\\0pcb\\sdcard\\",
       "environmentVariables": {
         
       }
