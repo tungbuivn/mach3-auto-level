@@ -1,0 +1,27 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "FlatCam": {
+      "commandName": "Project",
+      "commandLineArgs": "ger c:\\0pcb\\sdcard\\",
+      "environmentVariables": {
+        
+      }
+    },
+    "HeightMap": {
+      "commandName": "Project",
+      "commandLineArgs": "map c:\\0pcb\\sdcard\\map2 c:\\0pcb\\sdcard\\",
+      "environmentVariables": {
+
+      }
+    },
+    
+    "Fusion360": {
+      "commandName": "Project",
+      "commandLineArgs": "360 d:\\0cnc\\app\\__tests__\\data\\fusion-360.tap",
+      "environmentVariables": {
+
+      }
+    }
+  }
+}
