@@ -22,6 +22,14 @@ button {
     /* margin: 3px; */
     
 }
+.cmd {
+  border: 1px solid #ddd;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  min-width: 100%;
+}
 .mt3 {
   margin-top: 3px;
 }

@@ -26,7 +26,7 @@ const createWindow = () => {
   // mainWindow.webContents.openDevTools();
   return mainWindow;
 };
-// process.chdir("c:/0pcb/sdcard")
+// process.chdir("c:/0voron/")
 app.whenReady().then(() => {
 
   // var focusedWindow = BrowserWindow.getFocusedWindow();
@@ -41,18 +41,42 @@ app.whenReady().then(() => {
     
     return process.cwd();
   })
-  ipcMain.handle('runFlatCam', () => {
-    
-    child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["ger"])
+  function runapp(...args) {
+    var result =child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",args,{
+     
+      encoding: 'utf-8',
+     
+    });
+    return [result.stdout.toString(), result.stderr.toString()];
+  }
+  ipcMain.handle('runFlatCam', (...args) => {
+    return runapp("ger",...args)
+    // var result =child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["ger"],{
+     
+    //   encoding: 'utf-8',
+     
+    // });
+    // return [result.stdout.toString(), result.stderr.toString()];
   })
   ipcMain.handle('runHeightMap', (evt,...args) => {
+    return runapp("map",...args)
     // var p=args.map(o=>process.cwd()+"/"+o);
-    child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["map",...args])
+    // var result = child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["map",...args],{
+     
+    //   encoding: 'utf-8',
+     
+    // })
+    // return [result.stdout.toString(), result.stderr.toString()];
   })
   ipcMain.handle('runFusion360', (evt,...args) => {
+    return runapp("360",...args)
     
-    
-    child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["360",...args])
+    // var result =child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["360",...args],{
+     
+    //   encoding: 'utf-8',
+     
+    // });
+    // return [result.stdout.toString(), result.stderr.toString()];
   })
   ipcMain.handle('getFiles', () => {
     return fs.readdirSync(process.cwd());

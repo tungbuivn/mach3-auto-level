@@ -68,6 +68,11 @@ public class HeightMap : IRunableHandler
             }
         }
 
+        if ((_points.Count % TotalCol != 0) || (_points.Count % TotalRow != 0))
+        {
+            throw new Exception("So luong diem grid khong dung");
+        }
+
         _width = _grid[0].Tr.X - _grid[0].Bl.X;
         _height = _grid[0].Tr.Y - _grid[0].Bl.Y;
 
@@ -129,6 +134,7 @@ public class HeightMap : IRunableHandler
                 }
 
             File.WriteAllText($"{curDir}/level_{file}", des.ToString());
+            Console.WriteLine($@"Process file saved to: {curDir}/level_{file}");
         }
     }
 
@@ -249,8 +255,8 @@ public class HeightMap : IRunableHandler
         var row = (p.Y - _min.Y) / _height;
         var col = (p.X - _min.X) / _width;
         var (i, j) = ((int)Math.Floor(row.IsEqual(0)?0:row), (int)Math.Floor(col.IsEqual(0)?0:col));
-        if (i < 0 || j < 0) throw new Exception($"Khong the xac dinh vi tri diem tren grid ({p.X},{p.Y})");
-        // (i, j) = GetRowCol(p);
+        //if (i < 0 || j < 0) throw new Exception($"Khong the xac dinh vi tri diem tren grid ({p.X},{p.Y})");
+        (i, j) = GetRowCol(p);
         // var gr = Grid.Where(r => r.ContainPoint(p)).FirstOrDefault();
         var gr = _grid[i * (TotalRow - 1) + j];
         

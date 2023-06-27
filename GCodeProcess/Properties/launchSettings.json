@@ -10,8 +10,8 @@
     },
     "HeightMap": {
       "commandName": "Project",
-      "commandLineArgs": "map c:\\0voron\\step\\Fixedmapfile.txt c:\\0voron\\step\\cutout_nc.nc",
-      "workingDirectory": "c:\\0voron\\sensor",
+      "commandLineArgs": "map map2",
+      "workingDirectory": "c:\\0pcb\\sdcard\\",
       "environmentVariables": {
         
 

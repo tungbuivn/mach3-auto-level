@@ -27,6 +27,7 @@
  */
 
 import './index.css';
+// const {clipboard} = require('electron')
 var mapFile="";
 var ncFile="";
 var singleProm=Promise.resolve();
@@ -50,8 +51,34 @@ const updateCurrentDir = async () => {
 
     // console.log(response) // prints out 'pong'
 }
+function setCommandText(s) {
+    document.getElementById('cmd').innerHTML=s;
+}
+function setLog(...args){
+    document.getElementById("log").innerHTML=`<pre>${args.join("\n")}</pre>`;
+}
+function handleCall(fn) {
+    singleProm=singleProm.then(async ()=>{
+        setLog(...[]);
+        var rs=await fn();
+        rs=rs||[];
+        setLog(...rs);
+        await updateCurrentDir();
+        if (typeof(rs[1])!="undefined" && rs[1]!="") {
+           
+        } else {
+            alert("done");
+        }
+        
+        return Promise.resolve();
+    })
+}
 window.addEventListener("DOMContentLoaded", (event) => {
     updateCurrentDir();
+    // document.getElementById('cmd').onclick=()=>{
+    //     clipboard.writeText( document.getElementById('cmd').innerHTML);
+    // }
+    
     document.getElementById('setmap').onclick =() => {
         mapFile= document.getElementById('sel').innerHTML;
         document.getElementById('mapFile').innerHTML=mapFile;
@@ -64,30 +91,27 @@ window.addEventListener("DOMContentLoaded", (event) => {
         document.getElementById('ncFile').innerHTML=ncFile;
     };
     document.getElementById('flatcam').onclick = () => {
-        singleProm=singleProm.then(async ()=>{
-            await  window.versions.runFlatCam();
-            await updateCurrentDir();
-            alert("done");
-            return Promise.resolve();
+        handleCall(async()=>{
+            setCommandText(`gcp ger`)
+            return await  window.versions.runFlatCam();
+            
         })
         
     };
     document.getElementById('heightMap').onclick =() => {
-        singleProm=singleProm.then(async ()=>{
-            await  window.versions.runHeightMap(  mapFile,ncFile||"");
-            await updateCurrentDir();
-            alert("done");
-            return Promise.resolve();
+        handleCall(async()=>{
+            setCommandText(`gcp map ${mapFile} ${ncFile}`)
+            return await  window.versions.runHeightMap(mapFile,ncFile);
         })
        
     };
     document.getElementById('fusion360').onclick =() => {
-        singleProm=singleProm.then(async ()=>{
-            await window.versions.runFusion360(  ncFile);
-            await updateCurrentDir();
-            alert("done");
-            return Promise.resolve();
+        handleCall(async()=>{
+            setCommandText(`gcp 360 ${ncFile}`)
+             return await window.versions.runFusion360(  ncFile);
+            
         })
+       
         
     };
     
