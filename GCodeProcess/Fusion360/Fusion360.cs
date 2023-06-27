@@ -17,11 +17,22 @@ public class Fusion360 : IRunableHandler
     public void Run()
     {
         var gc = _gCodeFactory.CreateNew();
-        if (_appOptions.FileName != null)
+        var filename = _appOptions.FileName;
+        if (filename != null)
         {
-            gc.ParseFile(_appOptions.FileName);
-            File.WriteAllText(Path.GetDirectoryName(_appOptions.FileName) + "/mod_" +
-                              Path.GetFileName(_appOptions.FileName), gc.ToString());
+            if (!File.Exists(filename))
+            {
+                filename=System.IO.Directory.GetCurrentDirectory()+"/"+filename;
+                
+            }
+            else
+            {
+                filename = Path.GetFullPath(filename);
+            }
+            Console.WriteLine("Process file:" +filename);
+            gc.ParseFile(filename);
+            File.WriteAllText(Path.GetDirectoryName(filename) + "/mod_" +
+                              Path.GetFileName(filename), gc.ToString());
         }
     }
 }

@@ -3,22 +3,24 @@
   "profiles": {
     "FlatCam": {
       "commandName": "Project",
-      "commandLineArgs": "ger -t 1 c:\\0pcb\\sdcard\\",
+      "commandLineArgs": "ger c:\\0pcb\\sdcard\\",
       "environmentVariables": {
         
       }
     },
     "HeightMap": {
       "commandName": "Project",
-      "commandLineArgs": "map c:\\0pcb\\sdcard\\map2 c:\\0pcb\\sdcard\\",
+      "commandLineArgs": "map c:\\0voron\\step\\Fixedmapfile.txt c:\\0voron\\step\\cutout_nc.nc",
+      "workingDirectory": "c:\\0voron\\sensor",
       "environmentVariables": {
+        
 
       }
     },
     
     "Fusion360": {
       "commandName": "Project",
-      "commandLineArgs": "360 d:\\0cnc\\app\\__tests__\\data\\fusion-360.tap",
+      "commandLineArgs": "360 c:\\0pcb\\sdcard\\ALcutout_nc.nc",
       "environmentVariables": {
 
       }

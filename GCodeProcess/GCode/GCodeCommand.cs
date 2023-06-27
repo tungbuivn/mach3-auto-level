@@ -11,7 +11,7 @@ public class GCodeCommand
 
     // public string Cmd { get; set; }
     public List<GCodeOp> Data { get; set; } = new();
-    public string Comment { get; set; }
+    public string Comment { get; set; } = null!;
 
     public bool IsG0123()
     {
@@ -23,6 +23,8 @@ public class GCodeCommand
 
         return false;
     }
+
+   
 
     public GCodeCommand Copy()
     {
@@ -45,7 +47,13 @@ public class GCodeCommand
         IsComment = string.IsNullOrEmpty(s) || s[0] == '(';
         if (!IsComment)
         {
-            var m = s.Split(';');
+            
+            var m = Regex.Split(s,";");
+            if (Regex.IsMatch(s, "\\("))
+            {
+                m = Regex.Split(s, "\\(");
+                m[1] = "(" + m[1];
+            }
             s = Regex.Replace(m[0], "([a-zA-Z])", " $1");
             if (m.Length > 1)
             {

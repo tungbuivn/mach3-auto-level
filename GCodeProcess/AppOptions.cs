@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
-using CommandLine;
-using GCodeProcess.FlatCam;
+﻿using CommandLine;
 
+namespace GCodeProcess;
 
 public class AppOptions
 {
@@ -11,7 +10,5 @@ public class AppOptions
     [Value(0, MetaName = "cmd", HelpText = "command line process.ger,360")]
     public string Cmd { get; set; } = "ger";
 
-    public virtual Type Handler { get; set; }
-   
-  
+    public virtual Type Handler { get; set; } = typeof(FlatCam.FlatCam);
 }

@@ -12,7 +12,37 @@ namespace GCodeProcess;
 
 public static class IoC
 {
+    public static Func<string[],AppOptions> GetOptions = (args) =>
+    {
+        var ps = new Parser(ops => { ops.IgnoreUnknownArguments = true; });
+        var opts = ps.ParseArguments<AppOptions>(args).WithNotParsed((er) => { })
+            .MapResult(rs =>
+            {
+                // AppOptions rs = null;
+                if (rs.Cmd == "ger")
+                {
+                    rs = Parser.Default.ParseArguments<GerberOptions>(args).Value;
+                }
+                else if (rs.Cmd == "360")
+                {
+                    rs = Parser.Default.ParseArguments<Fusion360Options>(args).Value;
+                }
+                else if (rs.Cmd == "map")
+                {
+                    rs = Parser.Default.ParseArguments<HeightMapOptions>(args).Value;
+                }
+
+                return rs;
+                // return rs;
+            }, (err) => null!);
+        return opts;
+    };
     public static void RegisterIoc(this HostApplicationBuilder builder, string[] args)
+    {
+        RegisterIoc(builder.Services, args);
+    }
+
+    public static void RegisterIoc(this IServiceCollection serviceCollection, string[] args)
     {
         IConfigurationRoot config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -23,54 +53,17 @@ public static class IoC
         Settings settings = config.GetRequiredSection("Settings").Get<Settings>() ??
                             throw new InvalidOperationException();
 
-        builder.Services.AddTransient<GCode.GCode>();
-        builder.Services.AddSingleton<GCodeFactory>();
-        builder.Services.AddSingleton(settings);
-        builder.Services.AddSingleton<FlatCam.FlatCam>();
-        builder.Services.AddSingleton<Fusion360.Fusion360>();
-        builder.Services.AddSingleton<HeightMap.HeightMap>();
-        builder.Services.AddSingleton<AppHandler>();
-        var ps = new Parser(ops =>
-        {
-            ops.IgnoreUnknownArguments = true;
-        });
-       var opts= ps.ParseArguments<AppOptions>(args).WithNotParsed((er)=>{})
-           .MapResult(rs =>
-        {
-            // AppOptions rs = null;
-            if (rs.Cmd == "ger")
-            {
-                rs= Parser.Default.ParseArguments<GerberOptions>(args).Value;
-            }
-            else  if (rs.Cmd == "360")
-            {
-                rs = Parser.Default.ParseArguments<Fusion360Options>(args).Value;
-            }
-            else if (rs.Cmd == "map")
-            {
-                rs = Parser.Default.ParseArguments<HeightMapOptions>(args).Value;
-            }
-            
-            return rs;
-            // return rs;
-        }, (err) => null!);
+        serviceCollection.AddTransient<GCode.GCode>();
+        serviceCollection.AddSingleton<GCodeFactory>();
+        serviceCollection.AddSingleton(settings);
+        serviceCollection.AddTransient<FlatCam.FlatCam>();
+        serviceCollection.AddTransient<Fusion360.Fusion360>();
+        serviceCollection.AddTransient<HeightMap.HeightMap>();
+        serviceCollection.AddSingleton<AppHandler>();
+        
+        
         // AppOptions opts = Parser.Default.ParseArguments<AppOptions>(args).Value;
-      
-        builder.Services.AddSingleton(opts);
-
-        // switch (opts.Cmd)
-        // {
-        //     case "ger":
-        //         builder.Services.AddSingleton(Parser.Default.ParseArguments<GerberOptions>(args).Value);
-        //         break;
-        //     case "360":
-        //         builder.Services.AddSingleton(Parser.Default.ParseArguments<Fusion360Options>(args).Value);
-        //
-        //         break;
-        //     case "map":
-        //         builder.Services.AddSingleton(Parser.Default.ParseArguments<HeightMapOptions>(args).Value);
-        //
-        //         break;
-        // }
+        
+            serviceCollection.AddTransient((svc)=>GetOptions(args));
     }
 }

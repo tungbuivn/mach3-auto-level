@@ -10,7 +10,7 @@ public class HeightMapOptions:AppOptions
     public string? MapFile { get; set; }
 
     [Value(2, MetaName = "directory", HelpText = "Mapfile to process.")]
-    public string Para1 { get; set; }
+    public string Para1 { get; set; } = null!;
 
     public string Directory
     {

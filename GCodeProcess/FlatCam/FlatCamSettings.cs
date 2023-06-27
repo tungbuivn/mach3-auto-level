@@ -1,4 +1,4 @@
-﻿namespace GCodeProcess;
+﻿namespace GCodeProcess.FlatCam;
 
 public class FlatCamSettings
 {

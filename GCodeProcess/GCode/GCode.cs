@@ -12,6 +12,24 @@ public class GCode
             string.Join(" ", o.Data.Select(p => $"{p.Op}{p.Val}"))+ (string.IsNullOrEmpty(o.Comment)?"":"  ;")+o.Comment
             ));
 
+    public bool IsCommand(string gc, int i)
+    {
+        var cmd = new GCodeCommand();
+        cmd.Parse(gc.ToUpper());
+        return IsCommand(cmd.Data[0], i);
+    }
+    public bool IsCommand(GCodeOp gc,int i)
+    {
+        var d = Data[i];
+        if (d.IsComment) return false;
+        if (!d.TryGet(gc.Op, out var v))
+        {
+            v = GetPrev(gc.Op, i);
+        }
+
+        return v != null && (v.Op == gc.Op) && (v.Val.GetInt() == gc.Val.GetInt());
+    }
+
     public void Normalize()
     {
         // find first line contain 'Z', that is where to start
@@ -182,15 +200,4 @@ public class GCode
     {
         ParseLines(File.ReadAllLines(file).ToList());
     }
-}
-
-public class GCodeOp
-{
-    public char Op { get; set; }
-    public string Val { get; set; } = null!;
-
-    // public T Get<T>() 
-    // {
-    //     // return typeof(T).GetMethod("Parse").Invoke(Val);
-    // }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using System.Diagnostics;
-using System.Net;
 using System.Text;
 using GCodeProcess.GCode;
 using GCodeProcess.Graphics;
@@ -48,11 +47,11 @@ public class FlatCam:IRunableHandler
             ProcessTool(fileTypeAct);
         }
 
-        var drillNcFiles = new List<string>();
+        // var drillNcFiles = new List<string>();
         var drillGCodeExport = String.Join("\n", _drillTools.Select(t => (int)(t * 10)).Distinct().Select(tl =>
         {
-            var file = (((int)tl) + "").PadLeft(2, '0');
-            drillNcFiles.Add($"{dir}/drill{file}.nc");
+            var file = (tl + "").PadLeft(2, '0');
+            // drillNcFiles.Add($"{dir}/drill{file}.nc");
             var ret = $@"
 drillcncjob drill -drilled_dias {tl / 10.0} -drillz {_settingsFlatCam.DrillDepth} -travelz {_settingsFlatCam.ZClearance} -feedrate_z {_settingsFlatCam.ZFetchRate} -spindlespeed {_settingsFlatCam.SpindleSpeed} -pp default -outname drill{file} 
 write_gcode drill{file} {dir}/drill{file}.nc";
@@ -89,7 +88,7 @@ write_gcode top_nc {dir}/top_layer.nc
 ";
         }
 
-        var cleanPCB = _settingsFlatCam.CleanPcb
+        var cleanPcb = _settingsFlatCam.CleanPcb
             ? $@"
 ncc mg_geo -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname ncc_board
 cncjob ncc_board -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname ncc_board_nc 
@@ -113,7 +112,7 @@ mirror drill -axis Y  -box cutout
 #note this must be last call on mirror
 mirror cutout -axis Y  -box cutout
 join_geometry mg_geo cutout bottom_layer
-{cleanPCB}
+{cleanPcb}
 
 #cutout
 geocutout cutout -dia {_settingsFlatCam.CutOutDiameter} -gapsize 0.3 -gaps lr -outname cutout_geo
@@ -136,6 +135,37 @@ write_gcode cutout_nc {dir}/done.pid
         }
 
         File.WriteAllText(_appOptions.Directory + "/script-beta.txt", scriptTemplate);
+       
+        File.WriteAllText($"{dir}/ofs.m1s",$@"
+
+
+Dim sFileText As String
+Dim iFileNo As Integer
+iFileNo = FreeFile
+'open the file for writing
+Open {q}{dir}/rec{q} For Output As #iFileNo
+'please note, if this file already exists it will be overwritten!
+    
+Print #iFileNo,  {q}{q}
+Print #iFileNo,  {q}{q}
+
+
+
+
+        xd00d=GetParam({q}XMachine{q})
+        yd00d=GetParam(""YMachine"")
+        zd00d=GetParam(""ZMachine"")
+        Print #iFileNo,""G0  X"",xd00d,"" Y"",yd00d
+    
+
+        'write some example text to the file
+            Print #iFileNo,  """"
+
+
+    
+        'close the file (if you dont do this, you wont be able to open it again!)
+        Close #iFileNo
+");
 
         ProcessStartInfo processStartInfo = new ProcessStartInfo(_settingsFlatCam.Beta);
         processStartInfo.Arguments = $"--shellfile={dir}/script-beta.txt";
@@ -143,6 +173,11 @@ write_gcode cutout_nc {dir}/done.pid
         processStartInfo.UseShellExecute = true;
         Process process = new Process();
         process.StartInfo = processStartInfo;
+        // bool done = false;
+        // process.Exited += (e,v) =>
+        // {
+        //     done = true;
+        // };
 
 
         if (!process.Start())
@@ -151,7 +186,7 @@ write_gcode cutout_nc {dir}/done.pid
             return;
         }
 
-        while (!File.Exists($"{dir}/done.pid"))
+        while (!File.Exists($"{dir}/done.pid") && !process.HasExited )
         {
             Thread.Sleep(100);
         }
@@ -210,7 +245,7 @@ write_gcode cutout_nc {dir}/done.pid
         var numy = (long)((dy) / sp);
         var h =dy/numy;
         StringBuilder sb = new StringBuilder();
-        var (x, y) = (min.X, max.Y);
+        // var (x, y) = (min.X, max.Y);
         sb.Append($@"
 G90 G21 S{_settingsFlatCam.SpindleSpeed} G17
 

@@ -9,6 +9,8 @@
     <AssemblyName>GCodeProcess</AssemblyName>
     <RootNamespace>GCodeProcess</RootNamespace>
     <PublishSingleFile>true</PublishSingleFile>
+    
+    
   </PropertyGroup>
 
   <ItemGroup>
