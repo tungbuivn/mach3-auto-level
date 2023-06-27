@@ -12,19 +12,9 @@ public class AppHandler
         _svc = svc;
         _appOptions = appOptions;
     }
+
     public void Run()
     {
-       
-        Dictionary<string, Type> hdl = new()
-        {
-            {"ger",typeof(FlatCam.FlatCam)},
-            {"360",typeof(Fusion360.Fusion360)},
-            {"map",typeof(HeightMap.HeightMap)},
-        };
-        if (hdl.TryGetValue(_appOptions.Cmd, out var cls))
-        {
-            (_svc.GetRequiredService(cls) as IRunableHandler)?.Run();
-        }
-        
+        (_svc.GetRequiredService(_appOptions.Handler) as IRunableHandler)?.Run();
     }
 }

@@ -18,9 +18,9 @@ public class FlatCam:IRunableHandler
     private readonly List<String> _drillFilesValid = new();
     private readonly FlatCamSettings _settingsFlatCam;
 
-    public FlatCam(Settings settings, GerberOptions appOptions, GCodeFactory gCodeFactory)
+    public FlatCam(Settings settings, AppOptions appOptions, GCodeFactory gCodeFactory)
     {
-        _appOptions = appOptions;
+        _appOptions = (GerberOptions) appOptions;
         _gCodeFactory = gCodeFactory;
 
 
@@ -78,9 +78,15 @@ write_gcode drill{file} {dir}/drill{file}.nc";
 
 
         var openTop = "";
+        var processTop = "";
         if (_appOptions.Top == 1)
         {
             openTop = $"open_gerber {dir}/Gerber_TopLayer.GTL -outname top_layer";
+            processTop = $@"
+ncc top_layer -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname ncc_top
+cncjob ncc_top -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname top_nc 
+write_gcode top_nc {dir}/top_layer.nc
+";
         }
 
         var cleanPCB = _settingsFlatCam.CleanPcb
@@ -118,6 +124,7 @@ write_gcode cutout_nc {dir}/cutout_nc.nc
 
 {drillGCodeExport}
 
+{processTop}
 
 #signal application we have done job
 write_gcode cutout_nc {dir}/done.pid

@@ -2,11 +2,10 @@
 
 namespace GCodeProcess.FlatCam;
 
-public class GerberOptions
+public class GerberOptions:AppOptions
 {
-    [Value(0, MetaName = "cmd", HelpText = "Gerber file process")]
-    public string Cmd { get; set; } = "ger";
-    
+
+    public override Type Handler => typeof(FlatCam);
     [Option('t', "top", HelpText = "Process top layer ? 0 or 1. default is 0")]
     public int Top { get; set; } = 0;
     

@@ -8,9 +8,9 @@ public class Fusion360 : IRunableHandler
     private readonly Fusion360Options _appOptions;
     private readonly GCodeFactory _gCodeFactory;
 
-    public Fusion360(Fusion360Options appOptions, GCodeFactory gCodeFactory)
+    public Fusion360(AppOptions appOptions, GCodeFactory gCodeFactory)
     {
-        _appOptions = appOptions;
+        _appOptions = (Fusion360Options) appOptions;
         _gCodeFactory = gCodeFactory;
     }
 

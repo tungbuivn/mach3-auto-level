@@ -1,4 +1,6 @@
-﻿using CommandLine;
+﻿using System.Diagnostics;
+using CommandLine;
+using GCodeProcess.FlatCam;
 
 
 public class AppOptions
@@ -8,7 +10,8 @@ public class AppOptions
 
     [Value(0, MetaName = "cmd", HelpText = "command line process.ger,360")]
     public string Cmd { get; set; } = "ger";
-    
-    [Option('t', "top", Required = false, HelpText = "process top layer.")]
-    public int Top { get; set; } = 0;
+
+    public virtual Type Handler { get; set; }
+   
+  
 }

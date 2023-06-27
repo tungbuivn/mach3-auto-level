@@ -1,12 +1,10 @@
 ﻿using CommandLine;
 
-namespace GCodeProcess.FlatCam;
+namespace GCodeProcess.HeightMap;
 
-public class HeightMapOptions
+public class HeightMapOptions:AppOptions
 {
-    [Value(0, MetaName = "cmd", HelpText = "Gerber file process")]
-    public string Cmd { get; set; } = "map";
-
+    public override Type Handler => typeof(HeightMap);
 
     [Value(1, MetaName = "map-file", HelpText = "Mapfile to process.")]
     public string? MapFile { get; set; }

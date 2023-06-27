@@ -11,9 +11,9 @@ public class HeightMap : IRunableHandler
     private readonly GCodeFactory _gCodeFactory;
     private HeightMapSetting _setting;
 
-    public HeightMap(HeightMapOptions options, GCodeFactory gCodeFactory, Settings settings)
+    public HeightMap(AppOptions options, GCodeFactory gCodeFactory, Settings settings)
     {
-        _options = options;
+        _options = (HeightMapOptions) options;
         _gCodeFactory = gCodeFactory;
         _options.MapFile = _options.MapFile!.ReplacePath();
         _setting = settings.HeightMap;
@@ -64,7 +64,7 @@ public class HeightMap : IRunableHandler
        
         // handling gcode file
         var curDir = _options.Directory.ReplacePath();
-        foreach (var file in new[] { "cutout_nc.nc", "drill08.nc", "drill06.nc", "ncc_board.nc" })
+        foreach (var file in new[] { "cutout_nc.nc", "drill08.nc", "drill06.nc", "ncc_board.nc","top_layer.nc" })
         {
             
             var filePath = $"{curDir}/{file}";
