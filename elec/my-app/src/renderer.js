@@ -30,8 +30,9 @@
 import styles from './index.css'
 // import './popup.css'
 const makerjs = require('makerjs');
+var scrollSvg = require("./scroll-svg")
 // var Popup=require("./popup");
-var { define, html, svg, store } = require("./hybrids");
+var { define, html, svg, store, dispatch } = require("./hybrids");
 var drawData = {
     count: 0,
     lines: [],
@@ -160,18 +161,38 @@ window.addEventListener("DOMContentLoaded", (event) => {
 
 
     };
+    // function setUpsScroll() {
+    //     var n = document.querySelector('svg');
+    //     if (n == null) {
+    //         // debugger;
+    //         setTimeout(() => setUpsScroll(), 100)
+    //     } else {
 
+    //         scrollSvg()
+    //     }
+
+    // }
+    // .addEventListener("setupSvg", (evt) => {
+    //     debugger;
+    //     setUpsScroll();
+    // })
 
 });
+
 define({
     tag: "my-draw",
     name: 'xxxx',
     dataList: store(drawStore),
     // lines: "store.get(drawStore).count",
+    input: ({ render }) => {
+        return render().querySelector("svg")
+    },
+
     render: ({ dataList }) => {
 
+
         return html`
-        ${store.ready(dataList) && html`<div class="svg" innerHTML="${draw(dataList)}"></div>`}
+        ${store.ready(dataList) && html`<div class="svg" id="psa" innerHTML="${draw(dataList)}"></div>`}
         
     
         `.css`
@@ -191,7 +212,10 @@ define({
     },
 });
 function draw(xxx) {
-    // debugger;
+
+
+    // dispatch(document.querySelector("my-draw"), "setupSvg")
+
     var lines = drawData.lines;
     var gcode = drawData.gcode;
     var svg = '';
@@ -376,6 +400,10 @@ function draw(xxx) {
     }
     // debugger;
     var svg = makerjs.exporter.toSVG(model, { useSvgPathOnly: false });
+    setTimeout(() => {
+        var dom = document.querySelector("my-draw").input;
+        scrollSvg(dom);
+    }, 200);
     return svg;
 }
 

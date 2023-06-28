@@ -17,10 +17,15 @@ body {
   justify-content: center;
 }
 
+.w100 {
+  width: 100%;
+}
+
+/* 
 .flex {
   display: flex;
   width: 100%;
-}
+} */
 
 .selected-file {
   padding-top: 10px;
@@ -132,4 +137,8 @@ my-draw {
 .flex-1 {
 
   flex: 1;
+}
+
+#log {
+  overflow: scroll;
 }

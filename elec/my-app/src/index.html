@@ -8,32 +8,41 @@
 </head>
 
 <body>
-  <div class="flex flex-col">
-    <div class="pb8"><b>Directory:&nbsp;</b><span id="dir"></span></div>
+  <div class="flex flex-col w100">
     <div class="flex">
-      <button id="flatcam">Run Flatcam</button>
-      <button class="ml3" id="heightMap">Apply height map</button>
-      <button class="ml3" id="fusion360">Repair NC file</button>
-    </div>
-    <div id="log"></div>
-    <div class="selected-file"><b>Selected file:&nbsp;</b><span id="sel"></span>
-    </div>
-    <div>
+      <div class="flex flex-col">
+        <div class="pb8"><b>Directory:&nbsp;</b><span id="dir"></span></div>
+        <div class="flex">
+          <button id="flatcam">Run Flatcam</button>
+          <button class="ml3" id="heightMap">Apply height map</button>
+          <button class="ml3" id="fusion360">Repair NC file</button>
+        </div>
+
+        <div class="selected-file"><b>Selected file:&nbsp;</b><span id="sel"></span>
+        </div>
+        <div>
 
 
-      <div class="flex">
+          <div class="flex">
 
-        <button id="setmap">Set map file</button>
+            <button id="setmap">Set map file</button>
 
-        <div id="mapFile"></div>
+            <div id="mapFile"></div>
+          </div>
+          <div class="mt3 flex">
+
+            <button id="setnc">Set NC file</button>
+            <div id="ncFile"></div>
+          </div>
+        </div>
+
       </div>
-      <div class="mt3 flex">
+      <div class="ml3 flex flex-1 flex-col" id="log">
 
-        <button id="setnc">Set NC file</button>
-        <div id="ncFile"></div>
       </div>
     </div>
     <div class="cmd"><span>Command:&nbsp;</span><span id="cmd">&nbsp;</span></div>
+
     <div class="ovh mt10 mb5 flex flex-1">
 
 
