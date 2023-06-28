@@ -3,6 +3,10 @@
 
 ## hardware require
 - mach3 controller
+
+![Screenshoot](https://github.com/tungbuivn/mach3-auto-level/blob/main/elec/my-app/images/main.png?raw=true)
+
+
 ## NOTE:
 currently not work with arc, only line segments can be process
 
