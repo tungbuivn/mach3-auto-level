@@ -211,6 +211,7 @@ define({
         `
     },
 });
+var svgIdCount = 0;
 function draw(xxx) {
 
 
@@ -400,10 +401,24 @@ function draw(xxx) {
     }
     // debugger;
     var svg = makerjs.exporter.toSVG(model, { useSvgPathOnly: false });
+    svgIdCount = svgIdCount + 1;
+    svg = svg.replace(/^\<svg/, `<svg id="${svgIdCount}" `);
     setTimeout(() => {
-        var dom = document.querySelector("my-draw").input;
-        scrollSvg(dom);
-    }, 200);
+        (function waitDom(cap) {
+
+            var dom = document.querySelector("my-draw").input;
+            if (dom.getAttribute("id") == cap) {
+                scrollSvg(dom);
+            } else {
+                setTimeout(() => waitDom(cap), 10);
+            }
+
+
+        })(svgIdCount);
+    }, 10)
+
+
+
     return svg;
 }
 

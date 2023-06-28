@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using GCodeProcess.FlatCam;
 using GCodeProcess.GCode;
@@ -50,7 +51,7 @@ public class HeightMap : IRunableHandler
 
         int countY = CountRow(_points!);
         TotalRow = countY;
-        _grid2D = new Point3D[ _points.Count / TotalRow,TotalRow];
+        _grid2D = new Point3D[_points.Count / TotalRow, TotalRow];
         var newsort = new List<Point3D>();
         int row = 0;
         while (_points.Any())
@@ -66,11 +67,12 @@ public class HeightMap : IRunableHandler
             {
                 _cols = ls.Select(o => o.X).ToList();
             }
+
             _points = _points.Skip(TotalRow).ToList();
             newsort.AddRange(ls);
             _rows.Add(ls[0].Y);
-
         }
+
         TotalCol = _rows.Count;
         // normalize coord
         var testX = new List<double>();
@@ -88,17 +90,16 @@ public class HeightMap : IRunableHandler
 
         if (testX.Distinct().Count() == TotalRow && testY.Distinct().Count() == TotalCol)
         {
-            
         }
         else
         {
             throw new Exception("Invalid comlumn heightmap");
         }
-        
+
 
         _points = newsort;
 
-       
+
         // int countX = CountRow(_points!, false);
         // TotalCol = countX;
         // _rows = _rows.OrderBy(o => o).ToList();
@@ -107,13 +108,12 @@ public class HeightMap : IRunableHandler
 
         _min = new Point2D(_points.Min(o => o!.X), _points.Min(o => o!.Y));
         // new Point2D(_points.Max(o => o!.X), _points.Max(o => o!.Y));
-        for (int i = 0; i < TotalCol-1; i++)
+        for (int i = 0; i < TotalCol - 1; i++)
         {
             for (int j = 0; j < TotalRow - 1; j++)
             {
-               
                 {
-                    var rect = new Rect3D(_grid2D[i,j], _grid2D[i, j+1], _grid2D[i+1, j+1], _grid2D[i + 1, j ]);
+                    var rect = new Rect3D(_grid2D[i, j], _grid2D[i, j + 1], _grid2D[i + 1, j + 1], _grid2D[i + 1, j]);
                     // var rect = new Rect3D(points[i * ny1 + j]!, points[(i + 1) * ny1  + j + 1]!);
                     _grid.Add(rect);
                 }
@@ -193,8 +193,8 @@ public class HeightMap : IRunableHandler
     public int TotalCol { get; set; }
 
     public int TotalRow { get; set; }
-    private List<double> _rows = new ();
-    private List<double> _cols = new ();
+    private List<double> _rows = new();
+    private List<double> _cols = new();
     private Point3D[,] _grid2D;
 
     private Point3D GetByRc(int r, int c)
@@ -213,16 +213,13 @@ public class HeightMap : IRunableHandler
             if (n == null)
             {
                 n = item;
-               
             }
             else if ((n.Y.IsEqual(item.Y, 0.1)))
             {
                 count++;
-              
             }
             else
             {
-                
                 break;
             }
         }
@@ -274,9 +271,9 @@ public class HeightMap : IRunableHandler
 
     (int row, int col) GetRowCol(Point3D p)
     {
-        int x=FindRange(p.Y,_rows);
-        int y=FindRange(p.X,_cols);
-        
+        int x = FindRange(p.Y, _rows);
+        int y = FindRange(p.X, _cols);
+
 
         return (x, y);
     }
@@ -299,20 +296,20 @@ public class HeightMap : IRunableHandler
 
     private Point3D SolveHeight(Point3D p)
     {
-        var row = (p.Y - _min.Y) / _height;
-        var col = (p.X - _min.X) / _width;
-        var (i, j) = ((int)Math.Floor(row.IsEqual(0)?0:row), (int)Math.Floor(col.IsEqual(0)?0:col));
+        // var row = (p.Y - _min.Y) / _height;
+        // var col = (p.X - _min.X) / _width;
+        // var (k, l) = ((int)Math.Floor(row.IsEqual(0)?0:row), (int)Math.Floor(col.IsEqual(0)?0:col));
         //if (i < 0 || j < 0) throw new Exception($"Khong the xac dinh vi tri diem tren grid ({p.X},{p.Y})");
-        (i, j) = GetRowCol(p);
-        var p1 = _grid2D[i, j];
-        if (p1.X < p.X && p1.Y < p.Y)
-        {
-            
-        }
-         // var gr = _grid.Where(r => r.ContainPoint(p)).FirstOrDefault();
+        var (i, j) = GetRowCol(p);
+        // var p1 = _grid2D[i, j];
+        // if (k !=i || l !=j)
+        // {
+        //     Debugger.Break();
+        // }
+        // var gr = _grid.Where(r => r.ContainPoint(p)).FirstOrDefault();
         var gr = _grid[i * (TotalRow - 1) + j];
-        
-        if ((gr != null)&&(gr.Bl.X<=p.X)&&(gr.Bl.Y<=p.Y)&&(gr.Tr.X>=p.X)&&(gr.Tr.Y>=p.Y))
+
+        if (gr != null && gr.Bl.X <= p.X && gr.Bl.Y <= p.Y && gr.Tr.X >= p.X && gr.Tr.Y >= p.Y)
         {
             var bl = new BilinearGraphic();
             var ps = bl.Interpolate(gr.Bl, gr.Br, gr.Tr, gr.Tl, p);

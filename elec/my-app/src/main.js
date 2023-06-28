@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const fs=require("fs");
-const child=require("child_process");
+const fs = require("fs");
+const child = require("child_process");
 const path = require('path');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -26,7 +26,7 @@ const createWindow = () => {
   // mainWindow.webContents.openDevTools();
   return mainWindow;
 };
-// process.chdir("c:/0voron/")
+// process.chdir("c:/0pcb/Gerber_PCB_test_2023-02-04/")
 app.whenReady().then(() => {
 
   // var focusedWindow = BrowserWindow.getFocusedWindow();
@@ -38,51 +38,51 @@ app.whenReady().then(() => {
     return 'pong';
   });
   ipcMain.handle('getWorkingDir', () => {
-    
+
     return process.cwd();
   })
   function runapp(...args) {
-    var result =child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",args,{
-     
+    var result = child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe", args, {
+
       encoding: 'utf-8',
-     
+
     });
     return [result.stdout.toString(), result.stderr.toString()];
   }
-  ipcMain.handle('runFlatCam', (...args) => {
-    return runapp("ger",...args)
+  ipcMain.handle('runFlatCam', (evt, ...args) => {
+    return runapp("ger", ...args)
     // var result =child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["ger"],{
-     
+
     //   encoding: 'utf-8',
-     
+
     // });
     // return [result.stdout.toString(), result.stderr.toString()];
   })
-  ipcMain.handle('runHeightMap', (evt,...args) => {
-    return runapp("map",...args)
+  ipcMain.handle('runHeightMap', (evt, ...args) => {
+    return runapp("map", ...args)
     // var p=args.map(o=>process.cwd()+"/"+o);
     // var result = child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["map",...args],{
-     
+
     //   encoding: 'utf-8',
-     
+
     // })
     // return [result.stdout.toString(), result.stderr.toString()];
   })
-  ipcMain.handle('runFusion360', (evt,...args) => {
-    return runapp("360",...args)
-    
+  ipcMain.handle('runFusion360', (evt, ...args) => {
+    return runapp("360", ...args)
+
     // var result =child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["360",...args],{
-     
+
     //   encoding: 'utf-8',
-     
+
     // });
     // return [result.stdout.toString(), result.stderr.toString()];
   })
   ipcMain.handle('getFiles', () => {
-    return fs.readdirSync(process.cwd()).filter(o=>!fs.lstatSync(o).isDirectory() );
+    return fs.readdirSync(process.cwd()).filter(o => !fs.lstatSync(o).isDirectory());
   })
-  ipcMain.handle("getHeightMapContent",(evt,file)=>{
-    return (fs.readFileSync(process.cwd()+"/"+file)+"").split("\n");
+  ipcMain.handle("getHeightMapContent", (evt, file) => {
+    return (fs.readFileSync(process.cwd() + "/" + file) + "").split("\n");
   })
 
 })
