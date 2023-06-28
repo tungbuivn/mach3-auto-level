@@ -20,7 +20,7 @@
     
     "Fusion360": {
       "commandName": "Project",
-      "commandLineArgs": "360 c:\\0pcb\\sdcard\\ALcutout_nc.nc",
+      "commandLineArgs": "360 d:\\0cnc\\app\\testcnc\\test2.cnc",
       "environmentVariables": {
 
       }

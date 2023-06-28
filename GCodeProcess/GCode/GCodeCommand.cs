@@ -77,8 +77,8 @@ public class GCodeCommand
                         Val = s1[1..]
                     };
                     return op;
-                }).ToLookup(o => o.Op)
-                .Select(o => o.First())
+                })
+              
                 .ToList();
         }
 

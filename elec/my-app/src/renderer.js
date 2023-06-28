@@ -27,23 +27,39 @@
  */
 
 import './index.css';
-// const {clipboard} = require('electron')
-var mapFile="";
-var ncFile="";
-var singleProm=Promise.resolve();
+// import './popup.css'
+const makerjs = require('makerjs');
+// var Popup=require("./popup");
+var { define, html, svg, store } = require("./hybrids");
+var drawData = {
+    lines: [],
+    gcode: []
+}
+var drawStore = {
+    count: 0
+
+}
+var mapFile = "";
+var ncFile = "";
+var singleProm = Promise.resolve();
+
 const updateCurrentDir = async () => {
     const response = await window.versions.getCurrentDir();
     document.getElementById('dir').innerHTML = response;
     const files = await window.versions.getFiles();
     var domFile = document.getElementById('files');
-    domFile.innerHTML="";
+    domFile.innerHTML = "";
     var listFiles = [];
+
     files.forEach(o => {
         var el = document.createElement("div");
-        el.setAttribute("class","file");
+        el.setAttribute("class", "file");
         el.innerHTML = o;
         el.onclick = () => {
+            // debugger;
             document.getElementById('sel').innerHTML = o;
+
+            // myPopup.show();
         };
         domFile.appendChild(el);
         listFiles.push(el);
@@ -52,70 +68,209 @@ const updateCurrentDir = async () => {
     // console.log(response) // prints out 'pong'
 }
 function setCommandText(s) {
-    document.getElementById('cmd').innerHTML=s;
+    document.getElementById('cmd').innerHTML = s;
 }
-function setLog(...args){
-    document.getElementById("log").innerHTML=`<pre>${args.join("\n")}</pre>`;
+function setLog(...args) {
+    document.getElementById("log").innerHTML = `<pre>${args.join("\n")}</pre>`;
 }
 function handleCall(fn) {
-    singleProm=singleProm.then(async ()=>{
+    singleProm = singleProm.then(async () => {
         setLog(...[]);
-        var rs=await fn();
-        rs=rs||[];
+        var rs = await fn();
+        rs = rs || [];
         setLog(...rs);
         await updateCurrentDir();
-        if (typeof(rs[1])!="undefined" && rs[1]!="") {
-           
+        if (typeof (rs[1]) != "undefined" && rs[1] != "") {
+
         } else {
             alert("done");
         }
-        
+
         return Promise.resolve();
     })
 }
+var count = 0;
 window.addEventListener("DOMContentLoaded", (event) => {
     updateCurrentDir();
+
+    // },1000)
+
     // document.getElementById('cmd').onclick=()=>{
     //     clipboard.writeText( document.getElementById('cmd').innerHTML);
     // }
-    
-    document.getElementById('setmap').onclick =() => {
-        mapFile= document.getElementById('sel').innerHTML;
-        document.getElementById('mapFile').innerHTML=mapFile;
-        
-       
+
+    document.getElementById('setmap').onclick = () => {
+        mapFile = document.getElementById('sel').innerHTML;
+        document.getElementById('mapFile').innerHTML = mapFile;
+        var data = window.versions.getHeightMapContent(mapFile);
+        // setTimeout(()=>{
+        data.then((lines) => {
+            drawData.lines = lines;
+            // drawData.lines
+
+            // document.querySelector('my-draw').lines=lines;
+            store.set(drawStore, { count: count++ });
+        })
+
     };
-    document.getElementById('setnc').onclick =() => {
-        
-        ncFile= document.getElementById('sel').innerHTML;
-        document.getElementById('ncFile').innerHTML=ncFile;
+    document.getElementById('setnc').onclick = () => {
+
+        ncFile = document.getElementById('sel').innerHTML;
+        document.getElementById('ncFile').innerHTML = ncFile;
+
+        var data = window.versions.getHeightMapContent(ncFile);
+        // setTimeout(()=>{
+        data.then((lines) => {
+            drawData.gcode = lines;
+            // drawData.lines
+
+            // document.querySelector('my-draw').lines=lines;
+            store.set(drawStore, { count: count++ });
+        })
     };
     document.getElementById('flatcam').onclick = () => {
-        handleCall(async()=>{
+        handleCall(async () => {
             setCommandText(`gcp ger`)
-            return await  window.versions.runFlatCam();
-            
+            return await window.versions.runFlatCam();
+
         })
-        
+
     };
-    document.getElementById('heightMap').onclick =() => {
-        handleCall(async()=>{
+    document.getElementById('heightMap').onclick = () => {
+        handleCall(async () => {
             setCommandText(`gcp map ${mapFile} ${ncFile}`)
-            return await  window.versions.runHeightMap(mapFile,ncFile);
+            return await window.versions.runHeightMap(mapFile, ncFile);
         })
-       
+
     };
-    document.getElementById('fusion360').onclick =() => {
-        handleCall(async()=>{
+    document.getElementById('fusion360').onclick = () => {
+        handleCall(async () => {
             setCommandText(`gcp 360 ${ncFile}`)
-             return await window.versions.runFusion360(  ncFile);
-            
+            return await window.versions.runFusion360(ncFile);
+
         })
-       
-        
+
+
     };
-    
+
+
 });
+define({
+    tag: "my-draw",
+    name: 'xxxx',
+    // data:store(drawStore),
+    lines: store(drawStore),
+    render: ({ lines }) => {
+
+        return html`${html`
+                    <div class="svg" innerHTML="${draw()}"></div>`
+            }
+        `.css`
+        svg {
+            width:100%;
+            height:100%;
+         }
+         #mapPoint {
+            stroke: red;
+         }
+      `
+
+    },
+});
+function draw() {
+    var lines = drawData.lines;
+    var gcode = drawData.gcode;
+    var svg = '';
+    var model = {
+        // id:"qqqqqqqq",
+        // paths: pathArray,
+        //  ,
+        models: {
+            //  measureRect: obj
+
+        }
+    };
+    if (lines || false) {
+        var m1 = lines.map(o => o.replace('\r', ""))
+            .filter(o => o != "")
+            .map(o => o.split(/[,\sxyz]/gi).filter(p => p != ""))
+
+        // debugger;
+        var pathArray = m1
+            .map(e => {
+
+                return {
+                    type: 'circle',
+                    origin: [parseFloat(e[0]), parseFloat(e[1])],
+                    radius: 0.2
+                };
+            });
+        model.models.mapPoint = {
+            paths: pathArray
+        }
+
+        // var pathArray = [ line, circle ];
+
+
+    }
+    if (gcode || false) {
+        function extract(sig, i) {
+            if (i < 0) return false;
+            var re = new RegExp(sig + "+([\+\-]?[\\d]+\\.?[\\d]+)", "i");
+            var ma = gcode[i].match(re);
+            if (ma) {
+                return ma[1];
+            } else {
+
+                return extract(sig, i - 1);
+            }
+        }
+        var gce = [];
+        for (var i = 0; i < gcode.length; i++) {
+            gcode[i] = gcode[i].split(/[;\(]/gi)[0];
+            if (gcode[i] != "") {
+                // debugger;
+                var m = extract('G', i);
+                // debugger;
+                if (m && parseInt(m) == '1') {
+                    // debugger;
+                    var x = extract('x', i);
+                    var y = extract('y', i);
+
+                    var x1 = extract('x', i - 1);
+                    var y1 = extract('y', i - 1);
+                    if (x && y && x1 && y1) {
+
+                        var p = [parseFloat(x), parseFloat(y), parseFloat(x1), parseFloat(y1)].filter(o => !isNaN(o));
+                        if (p.length == 4) {
+                            // debugger;
+                            gce.push({
+
+                                type: 'line',
+                                origin: [p[0], p[1]],
+
+                                end: [p[2], p[3]]
+                                // radius: 0.2
+
+                            })
+                        }
+
+                        // debugger;
+                    }
+
+                }
+            }
+
+        }
+        model.models.gcode = {
+            paths: gce
+        }
+    }
+    // debugger;
+    var svg = makerjs.exporter.toSVG(model, { useSvgPathOnly: false });
+    return svg;
+}
+
 
 
 console.log('👋 This message is being logged by "renderer.js", included via webpack');

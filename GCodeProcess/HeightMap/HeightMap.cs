@@ -141,8 +141,8 @@ public class HeightMap : IRunableHandler
     public int TotalCol { get; set; }
 
     public int TotalRow { get; set; }
-    private readonly List<Point3D> _rows = new List<Point3D>();
-    private readonly List<Point3D> _cols = new List<Point3D>();
+    private readonly List<double> _rows = new ();
+    private readonly List<double> _cols = new ();
 
     private Point3D GetByRc(int r, int c)
     {
@@ -160,19 +160,19 @@ public class HeightMap : IRunableHandler
             if (n == null)
             {
                 n = item;
-                if (!isY) _rows.Add(n);
+                if (!isY) _rows.Add(n.Y);
                 else
                 {
-                    _cols.Add(n);
+                    _cols.Add(n.X);
                 }
             }
             else if ((isY && n.Y.IsEqual(item.Y, 0.1)) || (!isY && n.X.IsEqual(item.X, 0.1)))
             {
                 count++;
-                if (!isY) _rows.Add(item);
+                if (!isY) _rows.Add(item.Y);
                 else
                 {
-                    _cols.Add(item);
+                    _cols.Add(item.X);
                 }
             }
             else
@@ -228,26 +228,27 @@ public class HeightMap : IRunableHandler
 
     (int row, int col) GetRowCol(Point3D p)
     {
-        int x=Int32.MaxValue;
-        int y=Int32.MaxValue;
-        for (int i = 1; i < _rows.Count; i++)
+        int x=FindRange(p.Y,_rows);
+        int y=FindRange(p.X,_cols);
+        
+
+        return (x, y);
+    }
+
+    private int FindRange(double val, List<double> data)
+    {
+        int rs = Int32.MaxValue;
+
+        for (int i = 1; i < data.Count; i++)
         {
-            if (_rows[i - 1].Y <= p.Y && p.Y <= _rows[i].Y)
+            if (data[i - 1] <= val && val <= data[i])
             {
-                x = i - 1;
-                break;
-            }
-        }
-        for (int i = 1; i < _cols.Count; i++)
-        {
-            if (_cols[i - 1].X <= p.X && p.X <= _cols[i].X)
-            {
-                y = i - 1;
+                rs = i - 1;
                 break;
             }
         }
 
-        return (x, y);
+        return rs;
     }
 
     private Point3D SolveHeight(Point3D p)

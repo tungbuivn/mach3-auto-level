@@ -11,8 +11,8 @@ if (require('electron-squirrel-startup')) {
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 800,
     // autoHideMenuBar: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
@@ -79,7 +79,10 @@ app.whenReady().then(() => {
     // return [result.stdout.toString(), result.stderr.toString()];
   })
   ipcMain.handle('getFiles', () => {
-    return fs.readdirSync(process.cwd());
+    return fs.readdirSync(process.cwd()).filter(o=>!fs.lstatSync(o).isDirectory() );
+  })
+  ipcMain.handle("getHeightMapContent",(evt,file)=>{
+    return (fs.readFileSync(process.cwd()+"/"+file)+"").split("\n");
   })
 
 })

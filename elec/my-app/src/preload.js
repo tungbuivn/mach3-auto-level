@@ -11,5 +11,6 @@ contextBridge.exposeInMainWorld('versions', {
     runFlatCam:(...args)=>ipcRenderer.invoke('runFlatCam',...args),
     runHeightMap:(...args)=>ipcRenderer.invoke("runHeightMap",...args),
     runFusion360:(...args)=>ipcRenderer.invoke("runFusion360",...args),
+    getHeightMapContent:(...args)=>ipcRenderer.invoke("getHeightMapContent",...args)
     // we can also expose variables, not just functions
   })
