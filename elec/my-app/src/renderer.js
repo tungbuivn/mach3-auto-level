@@ -180,6 +180,9 @@ define({
             height: ${document.querySelector('#files').clientHeight}px;
             // max-height: 100%;
           }
+          #drill {
+            stroke: magenta;
+          }
           
           #mapPoint {
             stroke: red;
@@ -237,6 +240,7 @@ function draw(xxx) {
             }
         }
         var gce = [];
+        var drill = [];
         for (var i = 0; i < gcode.length; i++) {
             // debugger;
             gcode[i] = gcode[i].replace(/[\r\n]/gi, "").toUpperCase();
@@ -261,16 +265,32 @@ function draw(xxx) {
 
                                 var p = [parseFloat(x), parseFloat(y), parseFloat(x1), parseFloat(y1)].filter(o => !isNaN(o));
                                 if (p.length == 4) {
-                                    // debugger;
-                                    gce.push({
+                                    // check it is drill action
+                                    if (p[0] == p[2] && p[1] == p[3]) {
+                                        drill.push({
 
-                                        type: 'line',
-                                        origin: [p[0], p[1]],
+                                            type: 'circle',
 
-                                        end: [p[2], p[3]]
-                                        // radius: 0.2
+                                            radius: 0.1,
+                                            origin: [p[0], p[1]]
 
-                                    })
+
+                                            // radius: 0.2
+
+                                        })
+                                    } else {
+                                        // debugger;
+                                        gce.push({
+
+                                            type: 'line',
+                                            origin: [p[0], p[1]],
+
+                                            end: [p[2], p[3]]
+                                            // radius: 0.2
+
+                                        })
+                                    }
+
                                 }
 
                                 // debugger;
@@ -349,6 +369,9 @@ function draw(xxx) {
         }
         model.models.gcode = {
             paths: gce
+        }
+        model.models.drill = {
+            paths: drill
         }
     }
     // debugger;
