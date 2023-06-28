@@ -168,7 +168,8 @@ define({
         `.css`
         svg {
             width:100%;
-            height:100%;
+            height:448px;
+            max-height:448px;
          }
          #mapPoint {
             stroke: red;
@@ -216,10 +217,10 @@ function draw() {
     if (gcode || false) {
         function extract(sig, i) {
             if (i < 0) return false;
-            var re = new RegExp(sig + "+([\+\-]?[\\d]+\\.?[\\d]+)", "i");
+            var re = new RegExp("(" + sig + ".[^\\sa-z]*)", "i");
             var ma = gcode[i].match(re);
             if (ma) {
-                return ma[1];
+                return ma[0].substr(1);
             } else {
 
                 return extract(sig, i - 1);
@@ -227,35 +228,109 @@ function draw() {
         }
         var gce = [];
         for (var i = 0; i < gcode.length; i++) {
+            // debugger;
+            gcode[i] = gcode[i].replace(/[\r\n]/gi, "").toUpperCase();
+            if (gcode[i] == "") continue;
             gcode[i] = gcode[i].split(/[;\(]/gi)[0];
             if (gcode[i] != "") {
                 // debugger;
                 var m = extract('G', i);
                 // debugger;
-                if (m && parseInt(m) == '1') {
+                if (m) {
                     // debugger;
-                    var x = extract('x', i);
-                    var y = extract('y', i);
-
-                    var x1 = extract('x', i - 1);
-                    var y1 = extract('y', i - 1);
-                    if (x && y && x1 && y1) {
-
-                        var p = [parseFloat(x), parseFloat(y), parseFloat(x1), parseFloat(y1)].filter(o => !isNaN(o));
-                        if (p.length == 4) {
+                    var ind = parseInt(m);
+                    switch (ind) {
+                        case 1:
                             // debugger;
-                            gce.push({
+                            var x = extract('x', i);
+                            var y = extract('y', i);
 
-                                type: 'line',
-                                origin: [p[0], p[1]],
+                            var x1 = extract('x', i - 1);
+                            var y1 = extract('y', i - 1);
+                            if (x && y && x1 && y1) {
 
-                                end: [p[2], p[3]]
-                                // radius: 0.2
+                                var p = [parseFloat(x), parseFloat(y), parseFloat(x1), parseFloat(y1)].filter(o => !isNaN(o));
+                                if (p.length == 4) {
+                                    // debugger;
+                                    gce.push({
 
-                            })
-                        }
+                                        type: 'line',
+                                        origin: [p[0], p[1]],
 
-                        // debugger;
+                                        end: [p[2], p[3]]
+                                        // radius: 0.2
+
+                                    })
+                                }
+
+                                // debugger;
+                            }
+                            break;
+                        // g02
+                        case 2:
+                        case 3:
+                            var points = [extract('x', i - 1), extract('y', i - 1), extract('x', i), extract('y', i)].filter(o => o !== false);
+                            if (points.length == 4) {
+                                points = points.map(o => parseFloat(o)).filter(o => !isNaN(o));
+                                // check i,j or r
+                                var pij = [extract('i', i), extract('j', i)].filter(o => o !== false);
+                                if (points.length == 4 && pij.length == 2) {
+                                    pij = pij.map(o => parseFloat(o)).filter(o => !isNaN(o));
+                                    if (pij.length == 2) {
+                                        // return ccw angle
+                                        function angle(x1, y1, x2, y2) {
+                                            [x1, y1, x2, y2] = [x2, y2, x1, y1];
+                                            var dot = x1 * x2 + y1 * y2;      // Dot product between[v1x, v1y] and[v2x, v2y]
+                                            var det = x1 * y2 - y1 * x2;      // Determinant
+                                            var angle = Math.atan2(det, dot);
+                                            var goc = angle * 180 / Math.PI;
+                                            if (det > 0) {
+                                                // ccw from v1 to v2 
+                                                // debugger;
+                                            } else {
+                                                // cw from v1 to v2
+                                                angle += Math.PI * 2;
+                                            }
+
+                                            return angle * 180 / Math.PI;
+                                        }
+
+                                        var cenx = points[0] + pij[0];
+                                        var ceny = points[1] + pij[1];
+                                        var v1x = -pij[0];
+                                        var v1y = -pij[1];
+                                        var v2x = points[2] - cenx;
+                                        var v2y = points[3] - ceny;
+                                        var p = [v1x, v1y, v2x, v2y];
+                                        var dist = Math.sqrt(v1x * v1x + v1y * v1y);
+                                        // angle(-1, -1, 1, 0);
+                                        // [v2x, v2y, v1x, v1y] = p;
+                                        var start = angle(v1x, v1y, 1, 0);
+                                        var end = angle(v2x, v2y, 1, 0);
+                                        // debugger;
+                                        var ma = end * 180 / Math.PI;  // atan2(y, x) or atan2(sin, cos)
+                                        // g2 start<end
+                                        // if (ind == 3) {
+                                        //     if (start < end) end = end - 360;
+                                        // } else {
+                                        //     if (end < start) end = end + 360;
+                                        // }
+                                        // var xxx = dist * Math.cos(end) + cenx;
+                                        // debugger;
+                                        var arc = {
+                                            type: 'arc',
+                                            origin: [cenx, ceny],
+                                            radius: dist,
+                                            startAngle: ind == 2 ? end : start,
+                                            endAngle: ind == 2 ? start : end
+                                            // startAngle: end,
+                                            // endAngle: start
+                                        };
+                                        gce.push(arc);
+                                    }
+                                }
+                            }
+                            break;
                     }
 
                 }

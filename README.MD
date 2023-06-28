@@ -33,6 +33,7 @@ file will be auto generate:
 after collect map point call this command to update z-height of all nc file
 ```shell
 GCodeProcess.exe map point_map_file
+GCodeProcess.exe map point_map_file some_nc_file
 ```
 this command will update above nc file to new file with the height modified
 
