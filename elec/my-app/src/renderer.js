@@ -26,18 +26,26 @@
  * ```
  */
 
-import './index.css';
+// import './index.css';
+import styles from './index.css'
 // import './popup.css'
 const makerjs = require('makerjs');
 // var Popup=require("./popup");
 var { define, html, svg, store } = require("./hybrids");
 var drawData = {
+    count: 0,
     lines: [],
     gcode: []
 }
-var drawStore = {
-    count: 0
+const lsdata = {
+    cmd: "aa"
+}
+const drawStore = {
 
+    count: 0,
+
+    lines: [""],
+    gcode: [""]
 }
 var mapFile = "";
 var ncFile = "";
@@ -109,7 +117,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
             // drawData.lines
 
             // document.querySelector('my-draw').lines=lines;
-            store.set(drawStore, { count: count++ });
+            store.set(drawStore, { count: count++, lines: lines });
         })
 
     };
@@ -125,7 +133,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
             // drawData.lines
 
             // document.querySelector('my-draw').lines=lines;
-            store.set(drawStore, { count: count++ });
+            store.set(drawStore, { count: count++, gcode: lines });
         })
     };
     document.getElementById('flatcam').onclick = () => {
@@ -158,27 +166,29 @@ window.addEventListener("DOMContentLoaded", (event) => {
 define({
     tag: "my-draw",
     name: 'xxxx',
-    // data:store(drawStore),
-    lines: store(drawStore),
-    render: ({ lines }) => {
+    dataList: store(drawStore),
+    // lines: "store.get(drawStore).count",
+    render: ({ dataList }) => {
 
-        return html`${html`
-                    <div class="svg" innerHTML="${draw()}"></div>`
-            }
+        return html`
+        ${store.ready(dataList) && html`<div class="svg" innerHTML="${draw(dataList)}"></div>`}
+        
+    
         `.css`
         svg {
-            width:100%;
-            height:448px;
-            max-height:448px;
-         }
-         #mapPoint {
+            width: 100%;
+            height: ${document.querySelector('#files').clientHeight}px;
+            // max-height: 100%;
+          }
+          
+          #mapPoint {
             stroke: red;
-         }
-      `
-
+          }
+        `
     },
 });
-function draw() {
+function draw(xxx) {
+    // debugger;
     var lines = drawData.lines;
     var gcode = drawData.gcode;
     var svg = '';

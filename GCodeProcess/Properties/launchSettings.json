@@ -10,8 +10,8 @@
     },
     "HeightMap": {
       "commandName": "Project",
-      "commandLineArgs": "map map2",
-      "workingDirectory": "c:\\0pcb\\sdcard\\",
+      "commandLineArgs": "map mapfile bottom_layer.nc",
+      "workingDirectory": "c:\\0pcb\\",
       "environmentVariables": {
         
 

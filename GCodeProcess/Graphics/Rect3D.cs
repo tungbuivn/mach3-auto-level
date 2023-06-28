@@ -4,16 +4,16 @@ namespace GCodeProcess.Graphics;
 
 public class Rect3D
 {
-    private Point2D _max;
-    private Point2D _min;
+    // private Point2D _max;
+    // private Point2D _min;
 
     public Rect3D(Point3D abl, Point3D abr,Point3D atr,Point3D atl)
     {
-        var st = new[] { atr, atl, abl, abr }.OrderBy(o => o.X).ThenBy(o => o.Y).ToArray();
-        (Bl, Br, Tr, Tl) = (st[0],st[2],st[3],st[1]);
-        _min = new Point2D(st.Min(o => o.X), st.Min(o => o.Y));
-        _max = new Point2D(st.Max(o => o.X), st.Max(o => o.Y));
-        //(bl, br, tr, tl) = (abl, abr, atr, atl);
+        // var st = new[] { atr, atl, abl, abr }.OrderBy(o => o.X).ThenBy(o => o.Y).ToArray();
+        // (Bl, Br, Tr, Tl) = (st[0],st[2],st[3],st[1]);
+        // _min = new Point2D(st.Min(o => o.X), st.Min(o => o.Y));
+        // _max = new Point2D(st.Max(o => o.X), st.Max(o => o.Y));
+        (Bl, Br, Tr, Tl) = (abl, abr, atr, atl);
     }
 
     public Point3D Tl { get; set; }
@@ -26,7 +26,7 @@ public class Rect3D
 
     public bool ContainPoint(Point3D pd)
     {
-        return _min.X <= pd.X && pd.X <= _max.X && _min.Y <= pd.Y && pd.Y <= _max.Y;
+        return Bl.X <= pd.X && pd.X <= Tr.X && Bl.Y <= pd.Y && pd.Y <= Tr.Y;
     }
 
     public (double a, double b, double c) GetSlope2D(Point3D p1, Point3D p2)

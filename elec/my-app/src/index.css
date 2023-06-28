@@ -1,30 +1,46 @@
+/* html {
+  width: 100vw;
+  height: 100vh;
+} */
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
   margin: auto;
   /* max-width: 38rem; */
-  padding: 2rem;
+  padding: 1rem;
+  margin: 0;
+  width: calc(100vw - 2rem);
+  height: calc(100vh - 2rem);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
 }
+
 .flex {
   display: flex;
   width: 100%;
 }
+
 .selected-file {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
 button {
-  background-color: hsl(206,100%,52%);
+  background-color: hsl(206, 100%, 52%);
   border: none;
-    color: white;
-    padding: 8px;
-    cursor: pointer;
-    /* margin: 3px; */
-    
+  color: white;
+  padding: 8px;
+  cursor: pointer;
+  /* margin: 3px; */
+
 }
+
 #draw {
   padding: 10px;
 }
+
 .cmd {
   border: 1px solid #ddd;
   padding-top: 8px;
@@ -33,39 +49,51 @@ button {
   margin-bottom: 5px;
   min-width: 100%;
 }
+
 .mt3 {
   margin-top: 3px;
 }
+
 .ml3 {
   margin-left: 8px;
 }
+
 .mr3 {
   margin-right: 3px;
 }
+
 .pb8 {
   margin-bottom: 8px;
 }
+
 .file {
   border: 1px solid #ddd;
   margin-top: 3px;
   padding: 3px;
 }
+
 .file:hover {
   background-color: blue;
   color: white;
 }
+
 my-draw {
   padding-left: 10px;
-  padding-top: 10px;
-  width: 100%;
-  height: 100%;
+  /* padding-top: 10px; */
+  padding-right: 10px;
+
 }
-.svg  {
-  width: 500px;
-  height: 500px;
+
+.mt10 {
+  margin-top: 10px;
 }
+
+.mb5 {
+  margin-bottom: 7px;
+}
+
 .list {
-  max-height: 462px;
+  /* max-height: 462px; */
   width: 350px;
   overflow-x: hidden;
   overflow-y: scroll;
@@ -84,6 +112,24 @@ my-draw {
   -webkit-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
 }
 
+.ovh {
+  overflow: hidden;
+}
+
 ::-webkit-scrollbar-corner {
   background: #393812;
+}
+
+.flex-col {
+  /* display: flex; */
+  flex-direction: column;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-1 {
+
+  flex: 1;
 }
