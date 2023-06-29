@@ -71,6 +71,16 @@ write_gcode drill{file} {dir}/drill{file}.nc";
                             String.Join(" ", _drillFilesValid.Select((_, i) => $"drill{i}"));
             }
         }
+        // milling slots
+        var millingStr = "";
+        if (_drillTools.Any(o => o >= 1.1))
+        {
+            millingStr = $@"
+millslots drill -milled_dias ""1.1"" -tooldia 0.8 -diatol 0 -outname milled_slots
+cncjob milled_slots -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp 0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 100 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milled_slots_nc
+write_gcode milled_slots_nc {dir}/milled_slots.nc
+";
+        }
 
 
         var q = "\"";
@@ -122,7 +132,7 @@ write_gcode cutout_nc {dir}/cutout_nc.nc
 #drill
 
 {drillGCodeExport}
-
+{millingStr}
 {processTop}
 
 #signal application we have done job
@@ -304,10 +314,11 @@ M30
                 {
                     tool = 0.6;
                 }
-                else
+                else if (tool < 1.1)
                 {
                     tool = 0.8;
                 }
+                else tool = 1.1;
 
                 tools.Add(tool);
                 allLines[i] = Regex.Replace(str, m.Groups[1].Value, String.Format("{0:0.0000}", tool));

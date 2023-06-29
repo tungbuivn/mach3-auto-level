@@ -28,13 +28,92 @@ public class HeightMap : IRunableHandler
     private List<Point3D?> _points = null!;
     private Point2D _min = null!;
 
+    void FixRpfMap(string mapFile)
+    {
+        var pa = Path.GetFullPath(mapFile);
+        var dir = Path.GetDirectoryName(pa).ReplacePath();
+        var filename = $"{dir}/rpf.nc";
+        if (!File.Exists(filename)) return;
+        Console.WriteLine($"Found rpc.nc ! Process repair \"{mapFile}\" file!");
+        var lines=File.ReadAllLines(filename);
+        var oldPoints = File.ReadAllLines(_options.MapFile!)
+            .Select(o =>
+            {
+                var ar = Regex.Split(o, "[^0-9\\.\\+\\-]").Where(so => !string.IsNullOrEmpty(so)).ToArray();
+                if (ar.Length > 2)
+                    return new Point3D(ar[0].GetDouble(), ar[1].GetDouble(), ar[2].GetDouble());
+                return null;
+            }).ToList();
+        var oldPos = 0;
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (Regex.IsMatch(lines[i], "^M40",RegexOptions.IgnoreCase))
+            {
+                var ls = new List<Point3D>();
+                
+                for (int j = i+1; j < lines.Length; j++)
+                {
+                    if (Regex.IsMatch(lines[j], "^M41",RegexOptions.IgnoreCase))
+                    {
+                        if (oldPoints.Count != ls.Count)
+                        {
+                            Console.WriteLine("Number of point in rpf.nc not match ! ignore merge coordinates rpf.");
+                        }
+                        else
+                        {
+                            // check already replace
+                            var done=Enumerable.Range(0, oldPoints.Count).All((k) => ls[k].IsEqual(oldPoints[k]));
+                            if (done)
+                            {
+                                Console.WriteLine("File already repair !");
+                                break;
+                            }
+                        
+                            // check coord match
+                            var match=Enumerable.Range(0, oldPoints.Count).All((k) => ls[k].IsEqual(oldPoints[k],precision:0.01));
+                            if (!match)
+                            {
+                                Console.WriteLine("Coordinates does not match, ignore merge rpf points");
+                            }
+                            else
+                            {
+                                File.WriteAllLines(mapFile,ls.Select(p=>$"{p.X},{p.Y},{p.Z}"));
+                            }
+                        }
+                       
+                       
+                        // write file and exit
+                        break;
+                    }
+                    if (Regex.IsMatch(lines[j], "^G1", RegexOptions.IgnoreCase))
+                    {
+                        var cmd = new GCodeCommand();
+                        cmd.Parse(lines[j]);
+                        cmd.TryGet('X', out var x);
+                        cmd.TryGet('Y', out var y);
+                        ls.Add(new Point3D(x.Val.GetDouble(),y.Val.GetDouble(),oldPoints[oldPos++].Z));
+                    }
+                    
+                }
+                
+                break;        
+            }
+        }
+
+        
+    }
     public void Run()
     {
+        
         var curDir = _options.Directory.ReplacePath();
         var fileName = _options.MapFile;
         if (!File.Exists(fileName))
         {
         }
+       
+            FixRpfMap(_options.MapFile);
+        
+       
 
         _points = File.ReadAllLines(_options.MapFile!)
             .Select(o =>
@@ -102,8 +181,8 @@ public class HeightMap : IRunableHandler
 
         // int countX = CountRow(_points!, false);
         // TotalCol = countX;
-        // _rows = _rows.OrderBy(o => o).ToList();
-        // _cols = _cols.OrderBy(o => o).ToList();
+        _rows = _rows.OrderBy(o => o).ToList();
+        _cols = _cols.OrderBy(o => o).ToList();
         // GetByRc(0, 0);
 
         _min = new Point2D(_points.Min(o => o!.X), _points.Min(o => o!.Y));
@@ -130,13 +209,15 @@ public class HeightMap : IRunableHandler
 
         // handling gcode file
 
-        var sources = new[] { "cutout_nc.nc", "drill08.nc", "drill06.nc", "ncc_board.nc", "top_layer.nc" };
+        var sources = new[] { "cutout_nc.nc", "drill08.nc", "drill06.nc", "ncc_board.nc","milled_slots.nc", "top_layer.nc" };
         if (File.Exists(curDir))
         {
             curDir = Path.GetFullPath(curDir).ReplacePath();
             sources = new[] { Path.GetFileName(curDir) };
             curDir = Path.GetDirectoryName(curDir)!.ReplacePath();
         }
+
+       
 
         foreach (var file in sources)
         {

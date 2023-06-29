@@ -10,8 +10,8 @@
     },
     "HeightMap": {
       "commandName": "Project",
-      "commandLineArgs": "map mapfile bottom_layer.nc",
-      "workingDirectory": "c:\\0pcb\\",
+      "commandLineArgs": "map rpfmap cutout_nc.nc",
+      "workingDirectory": "c:\\0pcb\\encoder",
       "environmentVariables": {
         
 
