@@ -209,7 +209,7 @@ public class HeightMap : IRunableHandler
 
         // handling gcode file
 
-        var sources = new[] { "cutout_nc.nc", "drill08.nc", "drill06.nc", "ncc_board.nc","milled_slots.nc", "top_layer.nc" };
+        var sources = new[] { "cutout_nc.nc", "drill08.nc", "drill06.nc", "ncc_board.nc","milled_slots08.nc","milled_slots20.nc", "top_layer.nc" };
         if (File.Exists(curDir))
         {
             curDir = Path.GetFullPath(curDir).ReplacePath();
@@ -266,8 +266,9 @@ public class HeightMap : IRunableHandler
                     des.Data[i].TrySet('Z', SolveHeight(p).Z.Fmt());
                 }
 
-            File.WriteAllText($"{curDir}/level_{file}", des.ToString());
-            Console.WriteLine($@"Process file saved to: {curDir}/level_{file}");
+            var fnSave = $"{curDir}/alv_{file}";
+            File.WriteAllText(fnSave, des.ToString());
+            Console.WriteLine($@"Process file saved to: {fnSave}");
         }
     }
 

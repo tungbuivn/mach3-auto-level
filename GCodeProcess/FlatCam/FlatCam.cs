@@ -8,6 +8,8 @@ namespace GCodeProcess.FlatCam;
 
 public class FlatCam:IRunableHandler
 {
+    private const double MillingDia1 = 1.21;
+    private const double MillingDia2 = 2;
     private readonly GerberOptions _appOptions;
     private readonly GCodeFactory _gCodeFactory;
 
@@ -73,12 +75,26 @@ write_gcode drill{file} {dir}/drill{file}.nc";
         }
         // milling slots
         var millingStr = "";
-        if (_drillTools.Any(o => o >= 1.1))
+        // using 0.8mm to milling any slot <=2mm
+        if (_drillTools.Any(o => o >= MillingDia1 && o<MillingDia2))
         {
+            var sign = "08";
+            var toolDia = 0.8;
             millingStr = $@"
-millslots drill -milled_dias ""1.1"" -tooldia 0.8 -diatol 0 -outname milled_slots
-cncjob milled_slots -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp 0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 100 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milled_slots_nc
-write_gcode milled_slots_nc {dir}/milled_slots.nc
+millslots drill -milled_dias ""{MillingDia1}"" -tooldia {toolDia} -diatol 0 -outname milled_slots{sign}
+cncjob milled_slots{sign} -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp 0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 100 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milled_slots{sign}_nc
+write_gcode milled_slots{sign}_nc {dir}/milled_slots{sign}.nc
+";
+        }
+        // using 2mm to milling any slot >2mm
+        if (_drillTools.Any(o => o >= MillingDia2))
+        {
+            var sign = "20";
+            var toolDia = 2.0;
+            millingStr += $@"
+millslots drill -milled_dias ""{MillingDia1}"" -tooldia {toolDia} -diatol 0 -outname milled_slots{sign}
+cncjob milled_slots{sign} -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp 0.2 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 100 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milled_slots{sign}_nc
+write_gcode milled_slots{sign}_nc {dir}/milled_slots{sign}.nc
 ";
         }
 
@@ -314,11 +330,14 @@ M30
                 {
                     tool = 0.6;
                 }
-                else if (tool < 1.1)
+                else if (tool < MillingDia1)
                 {
                     tool = 0.8;
                 }
-                else tool = 1.1;
+                else if (tool < MillingDia2)
+                    tool = MillingDia1;
+                else tool = MillingDia2;
+                
 
                 tools.Add(tool);
                 allLines[i] = Regex.Replace(str, m.Groups[1].Value, String.Format("{0:0.0000}", tool));

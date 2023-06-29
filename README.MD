@@ -8,7 +8,11 @@
 
 
 ## NOTE:
-currently not work with arc, only line segments can be process
+
+- currently not work with arc (G2,G3), only line segments can be process (G1)
+- any drilling <=0.6 will be using 0.6mm milling tool
+- any drilling in range 0.61 to 1.2 will be using 0.8mm milling tool, all milling hole <= 1.2mm will using 0.8mm to milling
+- all other drill and mill will using 2mm milling tool 
 
 ## workflow
 
