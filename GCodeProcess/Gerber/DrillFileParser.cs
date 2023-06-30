@@ -23,10 +23,11 @@ public class DrillFileParser
         if (key == "08")
         {
             var toolsGt1=string.Join(",", tl.Where(o=>o.Size>1).Select(o => o.Size));
+            var toolDrillDia = 0.8;
             if (!string.IsNullOrEmpty(toolsGt1))
             {
-                milldrill = $@"milldrills drill -milled_dias {toolsDias} -tooldia 0.8 -outname geo_milldrill{key}
-cncjob geo_milldrill{key} -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp 0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 50 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milldrill{key}_nc
+                milldrill = $@"milldrills drill -milled_dias {toolsDias} -tooldia {toolDrillDia} -outname geo_milldrill{key}
+cncjob geo_milldrill{key} -dia {toolDrillDia} -z_cut {_settingsFlatCam.DrillDepth} -dpp 0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRateMillDrill} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milldrill{key}_nc
 write_gcode milldrill{key}_nc {Dir}/gb_milldrill{key}.nc
 ";
                 //] [-use_thread <str>] [-diatol <float>]
@@ -62,7 +63,7 @@ write_gcode drill{key} {Dir}/gb_drill{key}.nc";
         // {
             return $@"
 millslots drill -milled_dias ""{toolsDias}"" -tooldia {toolMill} -diatol 0 -outname milled_slots{key}
-cncjob milled_slots{key} -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp {dpp} -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 50 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milled_slots{key}_nc
+cncjob milled_slots{key} -dia {toolMill} -z_cut {_settingsFlatCam.DrillDepth} -dpp {dpp} -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRateMillDrill} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milled_slots{key}_nc
 write_gcode milled_slots{key}_nc {Dir}/gb_milled_slots{key}.nc
 ";
         // });

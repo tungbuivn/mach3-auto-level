@@ -75,7 +75,7 @@ public class FlatCam:IRunableHandler
             openTop = $"open_gerber {dir}/Gerber_TopLayer.GTL -outname top_layer";
             processTop = $@"
 ncc top_layer -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname ncc_top
-cncjob ncc_top -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchCopperClear} -pp default -outname top_nc 
+cncjob ncc_top -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRateCopperClear} -feedrate_z {_settingsFlatCam.ZFetchCopperClear} -pp default -outname top_nc 
 write_gcode top_nc {dir}/gb_top_layer.nc
 ";
         }
@@ -83,7 +83,7 @@ write_gcode top_nc {dir}/gb_top_layer.nc
         var cleanPcb = _settingsFlatCam.CleanPcb
             ? $@"
 ncc mg_geo -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname geo_bottom_layer
-cncjob geo_bottom_layer -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchCopperClear} -pp default -outname ncc_bottom_layer 
+cncjob geo_bottom_layer -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRateCopperClear} -feedrate_z {_settingsFlatCam.ZFetchCopperClear} -pp default -outname ncc_bottom_layer 
 write_gcode ncc_bottom_layer {dir}/gb_bottom_layer.nc
 "
             : "";
@@ -108,7 +108,7 @@ join_geometry mg_geo cutout bottom_layer
 
 #cutout
 geocutout cutout -dia {_settingsFlatCam.CutOutDiameter} -gapsize 0.3 -gaps lr -outname cutout_geo
-cncjob cutout_geo -dia {_settingsFlatCam.CutOutDiameter}  -dpp 0.3 -z_cut {_settingsFlatCam.DrillDepth} -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname cutout_nc
+cncjob cutout_geo -dia {_settingsFlatCam.CutOutDiameter}  -dpp 0.3 -z_cut {_settingsFlatCam.DrillDepth} -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRateCopperClear} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname cutout_nc
 write_gcode cutout_nc {dir}/gb_cutout_nc.nc
 
 #drill

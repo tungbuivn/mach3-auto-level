@@ -11,8 +11,9 @@ public class FlatCamSettings
     public double DrillDepth { get; set; }
     public double ZClearance { get; set; }
     public double ZFetchRate { get; set; }
-    public double XyFetchRate { get; set; }
+    public double XyFetchRateCopperClear { get; set; }
     public int ZProbeFetchRate { get; set; }
     public int XyProbeFetchRate { get; set; }
     public int ZFetchCopperClear { get; set; }
+    public int XyFetchRateMillDrill { get; set; }
 }
