@@ -213,6 +213,7 @@ public class HeightMap : IRunableHandler
             "gb_bottom_layer.nc",
             "gb_drill06.nc",
             "gb_drill08.nc",
+            "gb_milldrill08.nc",
             "gb_milled_slots08.nc",
             "gb_drill20.nc",
             "gb_milled_slots20.nc",
@@ -282,8 +283,8 @@ public class HeightMap : IRunableHandler
         // is batch process ?
         if (sources.Length > 1)
         {
-            MergeFile(new[] { "alv_gb_drill08.nc", "alv_gb_milled_slots08.nc" }, "alv_gb_drillmill08.nc", curDir);
-            MergeFile(new[] { "alv_gb_drill20.nc", "alv_gb_milled_slots20.nc" }, "alv_gb_drillmill20.nc", curDir);
+            MergeFile(new[] { "alv_gb_drill08.nc","alv_gb_milldrill08.nc", "alv_gb_milled_slots08.nc" }, "alv_gb_drillmill08.nc", curDir);
+            MergeFile(new[] { "alv_gb_drill20.nc","alv_gb_milldrill08.nc", "alv_gb_milled_slots20.nc" }, "alv_gb_drillmill20.nc", curDir);
         }
     }
 

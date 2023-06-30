@@ -19,11 +19,27 @@ public class DrillFileParser
     {
 
         var toolsDias = string.Join(",", tl.Select(o => o.Size));
+        var milldrill = "";
+        if (key == "08")
+        {
+            var toolsGt1=string.Join(",", tl.Where(o=>o.Size>1).Select(o => o.Size));
+            if (!string.IsNullOrEmpty(toolsGt1))
+            {
+                milldrill = $@"milldrills drill -milled_dias {toolsDias} -tooldia 0.8 -outname geo_milldrill{key}
+cncjob geo_milldrill{key} -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp 0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 50 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milldrill{key}_nc
+write_gcode milldrill{key}_nc {Dir}/gb_milldrill{key}.nc
+";
+                //] [-use_thread <str>] [-diatol <float>]
+            }
+        }
+       
         if (string.IsNullOrEmpty(toolsDias)) return "";
         // process drill
         // var lst=tl.Select(o =>
         // {
             return $@"
+{milldrill}
+
 drillcncjob drill -drilled_dias {toolsDias} -drillz {_settingsFlatCam.DrillDepth} -travelz {_settingsFlatCam.ZClearance} -feedrate_z {_settingsFlatCam.ZFetchRate} -spindlespeed {_settingsFlatCam.SpindleSpeed} -pp default -outname drill{key} 
 write_gcode drill{key} {Dir}/gb_drill{key}.nc";
             
