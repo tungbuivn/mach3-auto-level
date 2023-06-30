@@ -3,6 +3,7 @@ using CommandLine;
 using GCodeProcess.FlatCam;
 using GCodeProcess.Fusion360;
 using GCodeProcess.GCode;
+using GCodeProcess.Gerber;
 using GCodeProcess.HeightMap;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +56,7 @@ public static class IoC
 
         serviceCollection.AddTransient<GCode.GCode>();
         serviceCollection.AddSingleton<GCodeFactory>();
+        serviceCollection.AddSingleton<DrillFileParser>();
         serviceCollection.AddSingleton(settings);
         serviceCollection.AddTransient<FlatCam.FlatCam>();
         serviceCollection.AddTransient<Fusion360.Fusion360>();

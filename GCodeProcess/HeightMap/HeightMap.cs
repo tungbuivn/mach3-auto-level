@@ -35,8 +35,8 @@ public class HeightMap : IRunableHandler
         var filename = $"{dir}/rpf.nc";
         if (!File.Exists(filename)) return;
         Console.WriteLine($"Found rpc.nc ! Process repair \"{mapFile}\" file!");
-        var lines=File.ReadAllLines(filename);
-        var oldPoints = File.ReadAllLines(_options.MapFile!)
+        var lines = File.ReadAllLines(filename);
+        var oldPoints = File.ReadAllLines(Path.GetFullPath(_options.MapFile!))
             .Select(o =>
             {
                 var ar = Regex.Split(o, "[^0-9\\.\\+\\-]").Where(so => !string.IsNullOrEmpty(so)).ToArray();
@@ -47,13 +47,13 @@ public class HeightMap : IRunableHandler
         var oldPos = 0;
         for (int i = 0; i < lines.Length; i++)
         {
-            if (Regex.IsMatch(lines[i], "^M40",RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(lines[i], "^M40", RegexOptions.IgnoreCase))
             {
                 var ls = new List<Point3D>();
-                
-                for (int j = i+1; j < lines.Length; j++)
+
+                for (int j = i + 1; j < lines.Length; j++)
                 {
-                    if (Regex.IsMatch(lines[j], "^M41",RegexOptions.IgnoreCase))
+                    if (Regex.IsMatch(lines[j], "^M41", RegexOptions.IgnoreCase))
                     {
                         if (oldPoints.Count != ls.Count)
                         {
@@ -62,58 +62,56 @@ public class HeightMap : IRunableHandler
                         else
                         {
                             // check already replace
-                            var done=Enumerable.Range(0, oldPoints.Count).All((k) => ls[k].IsEqual(oldPoints[k]));
+                            var done = Enumerable.Range(0, oldPoints.Count).All((k) => ls[k].IsEqual(oldPoints[k]));
                             if (done)
                             {
                                 Console.WriteLine("File already repair !");
                                 break;
                             }
-                        
+
                             // check coord match
-                            var match=Enumerable.Range(0, oldPoints.Count).All((k) => ls[k].IsEqual(oldPoints[k],precision:0.01));
+                            var match = Enumerable.Range(0, oldPoints.Count)
+                                .All((k) => ls[k].IsEqual(oldPoints[k], precision: 0.05));
                             if (!match)
                             {
                                 Console.WriteLine("Coordinates does not match, ignore merge rpf points");
                             }
                             else
                             {
-                                File.WriteAllLines(mapFile,ls.Select(p=>$"{p.X},{p.Y},{p.Z}"));
+                                File.WriteAllLines(mapFile, ls.Select(p => $"{p.X},{p.Y},{p.Z}"));
                             }
                         }
-                       
-                       
+
+
                         // write file and exit
                         break;
                     }
+
                     if (Regex.IsMatch(lines[j], "^G1", RegexOptions.IgnoreCase))
                     {
                         var cmd = new GCodeCommand();
                         cmd.Parse(lines[j]);
                         cmd.TryGet('X', out var x);
                         cmd.TryGet('Y', out var y);
-                        ls.Add(new Point3D(x.Val.GetDouble(),y.Val.GetDouble(),oldPoints[oldPos++].Z));
+                        ls.Add(new Point3D(x.Val.GetDouble(), y.Val.GetDouble(), oldPoints[oldPos++].Z));
                     }
-                    
                 }
-                
-                break;        
+
+                break;
             }
         }
-
-        
     }
+
     public void Run()
     {
-        
         var curDir = _options.Directory.ReplacePath();
         var fileName = _options.MapFile;
         if (!File.Exists(fileName))
         {
         }
-       
-            FixRpfMap(_options.MapFile);
-        
-       
+
+        FixRpfMap(_options.MapFile);
+
 
         _points = File.ReadAllLines(_options.MapFile!)
             .Select(o =>
@@ -209,7 +207,17 @@ public class HeightMap : IRunableHandler
 
         // handling gcode file
 
-        var sources = new[] { "cutout_nc.nc", "drill08.nc", "drill06.nc", "ncc_board.nc","milled_slots08.nc","milled_slots20.nc", "top_layer.nc" };
+        var sources = new[]
+        {
+            "gb_cutout_nc.nc",
+            "gb_bottom_layer.nc",
+            "gb_drill06.nc",
+            "gb_drill08.nc",
+            "gb_milled_slots08.nc",
+            "gb_drill20.nc",
+            "gb_milled_slots20.nc",
+            "gb_top_layer.nc"
+        };
         if (File.Exists(curDir))
         {
             curDir = Path.GetFullPath(curDir).ReplacePath();
@@ -217,7 +225,6 @@ public class HeightMap : IRunableHandler
             curDir = Path.GetDirectoryName(curDir)!.ReplacePath();
         }
 
-       
 
         foreach (var file in sources)
         {
@@ -270,6 +277,36 @@ public class HeightMap : IRunableHandler
             File.WriteAllText(fnSave, des.ToString());
             Console.WriteLine($@"Process file saved to: {fnSave}");
         }
+
+        // process merger file after process done
+        // is batch process ?
+        if (sources.Length > 1)
+        {
+            MergeFile(new[] { "alv_gb_drill08.nc", "alv_gb_milled_slots08.nc" }, "alv_gb_drillmill08.nc", curDir);
+            MergeFile(new[] { "alv_gb_drill20.nc", "alv_gb_milled_slots20.nc" }, "alv_gb_drillmill20.nc", curDir);
+        }
+    }
+
+    private void MergeFile(string[] fs, string outname, string curDir)
+    {
+        var outfile = $"{curDir}/{outname}";
+        if (File.Exists(outfile))
+        {
+            File.Delete(outfile);
+        }
+
+        var fl = fs.Select(o => $"{curDir}/{o}").Where(o => File.Exists(o)).ToList();
+        var txt = string.Join("\n", fl.Select(o => File.ReadAllText(o)));
+        // remove old file
+        foreach (var s in fl)
+        {
+            Console.WriteLine("Process merging file: " + s);
+            File.Delete(s);
+        }
+
+        // write new file
+        if (!string.IsNullOrEmpty(txt)&&txt.Length>10)
+            File.WriteAllText(outfile, txt);
     }
 
     public int TotalCol { get; set; }

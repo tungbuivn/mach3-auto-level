@@ -2,16 +2,18 @@
 using System.Diagnostics;
 using System.Text;
 using GCodeProcess.GCode;
+using GCodeProcess.Gerber;
 using GCodeProcess.Graphics;
 
 namespace GCodeProcess.FlatCam;
 
 public class FlatCam:IRunableHandler
 {
-    private const double MillingDia1 = 1.21;
+    private const double MillingDia1 = 1.20;
     private const double MillingDia2 = 2;
     private readonly GerberOptions _appOptions;
     private readonly GCodeFactory _gCodeFactory;
+    private readonly DrillFileParser _drillFileParser;
 
 
     // only contain valid tool from drill file
@@ -19,10 +21,11 @@ public class FlatCam:IRunableHandler
     private readonly List<String> _drillFilesValid = new();
     private readonly FlatCamSettings _settingsFlatCam;
 
-    public FlatCam(Settings settings, AppOptions appOptions, GCodeFactory gCodeFactory)
+    public FlatCam(Settings settings, AppOptions appOptions, GCodeFactory gCodeFactory,DrillFileParser drillFileParser)
     {
         _appOptions = (GerberOptions) appOptions;
         _gCodeFactory = gCodeFactory;
+        _drillFileParser = drillFileParser;
 
 
         _settingsFlatCam = settings.FlatCam;
@@ -46,57 +49,20 @@ public class FlatCam:IRunableHandler
         var drillFiles = files.Where(o => o.Key.Equals(".drl")).SelectMany(o => o).ToList();
         foreach (var fileTypeAct in drillFiles)
         {
-            ProcessTool(fileTypeAct);
+            _drillFileParser.ParseFile(fileTypeAct.FileName);
+             // ProcessTool(fileTypeAct);
         }
 
         // var drillNcFiles = new List<string>();
-        var drillGCodeExport = String.Join("\n", _drillTools.Select(t => (int)(t * 10)).Distinct().Select(tl =>
-        {
-            var file = (tl + "").PadLeft(2, '0');
-            // drillNcFiles.Add($"{dir}/drill{file}.nc");
-            var ret = $@"
-drillcncjob drill -drilled_dias {tl / 10.0} -drillz {_settingsFlatCam.DrillDepth} -travelz {_settingsFlatCam.ZClearance} -feedrate_z {_settingsFlatCam.ZFetchRate} -spindlespeed {_settingsFlatCam.SpindleSpeed} -pp default -outname drill{file} 
-write_gcode drill{file} {dir}/drill{file}.nc";
-            return ret;
-        }));
-        var drillStr = "";
-
-        if (_drillFilesValid.Any())
-        {
-            drillStr = $"open_excellon {_drillFilesValid[0]} -outname drill";
-
-            if (_drillFilesValid.Count() > 1)
-            {
-                drillStr = String.Join("\n",
-                    _drillFilesValid.Select((o, i) => { return $"open_excellon {o} -outname drill{i}"; }));
-                drillStr += "\njoin_excellons drill " +
-                            String.Join(" ", _drillFilesValid.Select((_, i) => $"drill{i}"));
-            }
-        }
-        // milling slots
-        var millingStr = "";
-        // using 0.8mm to milling any slot <=2mm
-        if (_drillTools.Any(o => o >= MillingDia1 && o<MillingDia2))
-        {
-            var sign = "08";
-            var toolDia = 0.8;
-            millingStr = $@"
-millslots drill -milled_dias ""{MillingDia1}"" -tooldia {toolDia} -diatol 0 -outname milled_slots{sign}
-cncjob milled_slots{sign} -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp 0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 100 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milled_slots{sign}_nc
-write_gcode milled_slots{sign}_nc {dir}/milled_slots{sign}.nc
-";
-        }
-        // using 2mm to milling any slot >2mm
-        if (_drillTools.Any(o => o >= MillingDia2))
-        {
-            var sign = "20";
-            var toolDia = 2.0;
-            millingStr += $@"
-millslots drill -milled_dias ""{MillingDia1}"" -tooldia {toolDia} -diatol 0 -outname milled_slots{sign}
-cncjob milled_slots{sign} -dia {_settingsFlatCam.PcbDiameter} -z_cut -2 -dpp 0.2 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate 100 -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname milled_slots{sign}_nc
-write_gcode milled_slots{sign}_nc {dir}/milled_slots{sign}.nc
-";
-        }
+//         var drillGCodeExport = String.Join("\n", _drillTools.Select(t => (int)(t * 10)).Distinct().Select(tl =>
+//         {
+//             var file = (tl + "").PadLeft(2, '0');
+//             // drillNcFiles.Add($"{dir}/drill{file}.nc");
+//             var ret = $@"
+// drillcncjob drill -drilled_dias {tl / 10.0} -drillz {_settingsFlatCam.DrillDepth} -travelz {_settingsFlatCam.ZClearance} -feedrate_z {_settingsFlatCam.ZFetchRate} -spindlespeed {_settingsFlatCam.SpindleSpeed} -pp default -outname drill{file} 
+// write_gcode drill{file} {dir}/drill{file}.nc";
+//             return ret;
+//         }));
 
 
         var q = "\"";
@@ -109,16 +75,16 @@ write_gcode milled_slots{sign}_nc {dir}/milled_slots{sign}.nc
             openTop = $"open_gerber {dir}/Gerber_TopLayer.GTL -outname top_layer";
             processTop = $@"
 ncc top_layer -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname ncc_top
-cncjob ncc_top -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname top_nc 
-write_gcode top_nc {dir}/top_layer.nc
+cncjob ncc_top -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchCopperClear} -pp default -outname top_nc 
+write_gcode top_nc {dir}/gb_top_layer.nc
 ";
         }
 
         var cleanPcb = _settingsFlatCam.CleanPcb
             ? $@"
-ncc mg_geo -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname ncc_board
-cncjob ncc_board -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname ncc_board_nc 
-write_gcode ncc_board_nc {dir}/ncc_board.nc
+ncc mg_geo -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname geo_bottom_layer
+cncjob geo_bottom_layer -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchCopperClear} -pp default -outname ncc_bottom_layer 
+write_gcode ncc_bottom_layer {dir}/gb_bottom_layer.nc
 "
             : "";
         var scriptTemplate = $@"
@@ -129,7 +95,7 @@ open_gerber {dir}/Gerber_BottomLayer.GBL -outname bottom_layer
 {openTop}
 
 #open and join drill files
-{drillStr}
+{_drillFileParser.GetMergeFileScript()}
 #open_excellon {dir}/Drill_PTH_Through.DRL -outname drill
 
 mirror bottom_layer -axis Y -box cutout
@@ -143,12 +109,11 @@ join_geometry mg_geo cutout bottom_layer
 #cutout
 geocutout cutout -dia {_settingsFlatCam.CutOutDiameter} -gapsize 0.3 -gaps lr -outname cutout_geo
 cncjob cutout_geo -dia {_settingsFlatCam.CutOutDiameter}  -dpp 0.3 -z_cut {_settingsFlatCam.DrillDepth} -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRate} -feedrate_z {_settingsFlatCam.ZFetchRate} -pp default -outname cutout_nc
-write_gcode cutout_nc {dir}/cutout_nc.nc
+write_gcode cutout_nc {dir}/gb_cutout_nc.nc
 
 #drill
 
-{drillGCodeExport}
-{millingStr}
+{_drillFileParser.GetScriptDrillMill()}
 {processTop}
 
 #signal application we have done job
@@ -258,8 +223,8 @@ Print #iFileNo,  {q}{q}
     {
         var gc = _gCodeFactory.CreateNew();
         var cut = _gCodeFactory.CreateNew();
-        cut.ParseFile($"{dir}/cutout_nc.nc");
-        gc.ParseFile($"{dir}/ncc_board.nc");
+        cut.ParseFile($"{dir}/gb_cutout_nc.nc");
+        gc.ParseFile($"{dir}/gb_bottom_layer.nc");
 
         var min = new Point3D(Math.Min(cut.MinXyz.X, gc.MinXyz.X), Math.Min(cut.MinXyz.Y, gc.MinXyz.Y));
         var max = new Point3D(Math.Max(cut.MaxXyz.X, gc.MaxXyz.X), Math.Max(cut.MaxXyz.Y, gc.MaxXyz.Y));
@@ -315,42 +280,39 @@ M30
 
     private void ProcessTool(FileTypeAct fileTypeAct)
     {
-        var allLines = File.ReadLines(fileTypeAct.FileName).ToList();
-        var tools = new List<double>();
-
-        for (int i = 0; i < allLines.Count(); i++)
-        {
-            var str = allLines[i];
-            if (str.Trim().Equals("%")) break;
-            var m = Regex.Match(str, @"^T\d+C(\d+\.?\d+)");
-            if (m.Success)
-            {
-                var tool = double.Parse(m.Groups[1].Value);
-                if (tool < 0.8)
-                {
-                    tool = 0.6;
-                }
-                else if (tool < MillingDia1)
-                {
-                    tool = 0.8;
-                }
-                else if (tool < MillingDia2)
-                    tool = MillingDia1;
-                else tool = MillingDia2;
-                
-
-                tools.Add(tool);
-                allLines[i] = Regex.Replace(str, m.Groups[1].Value, String.Format("{0:0.0000}", tool));
-            }
-        }
-
-        if (allLines.Any(s => s[0] == 'X'))
-        {
-            _drillTools.AddRange(tools);
-            _drillFilesValid.Add(fileTypeAct.FileName);
-        }
-
-        File.WriteAllLines(fileTypeAct.FileName, allLines);
+        // var allLines = File.ReadLines(fileTypeAct.FileName).ToList();
+        // var tools = new List<double>();
+        //
+        // for (int i = 0; i < allLines.Count(); i++)
+        // {
+        //     var str = allLines[i];
+        //     if (str.Trim().Equals("%")) break;
+        //     var m = Regex.Match(str, @"^T\d+C(\d+\.?\d+)");
+        //     if (m.Success)
+        //     {
+        //         var tool = double.Parse(m.Groups[1].Value);
+        //         if (tool < 0.8)
+        //         {
+        //             tool = 0.6;
+        //         }
+        //         else 
+        //         {
+        //             tool = 0.8;
+        //         }
+        //         
+        //
+        //         tools.Add(tool);
+        //         allLines[i] = Regex.Replace(str, m.Groups[1].Value, String.Format("{0:0.0000}", tool));
+        //     }
+        // }
+        //
+        // if (allLines.Any(s => s[0] == 'X'))
+        // {
+        //     _drillTools.AddRange(tools);
+        //     _drillFilesValid.Add(fileTypeAct.FileName);
+        // }
+        //
+        // File.WriteAllLines(fileTypeAct.FileName, allLines);
     }
 }
 

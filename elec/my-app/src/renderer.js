@@ -51,7 +51,20 @@ const drawStore = {
 var mapFile = "";
 var ncFile = "";
 var singleProm = Promise.resolve();
+function setNCClick() {
+    ncFile = document.getElementById('sel').innerHTML;
+    document.getElementById('ncFile').innerHTML = ncFile;
 
+    var data = window.versions.getHeightMapContent(ncFile);
+    // setTimeout(()=>{
+    data.then((lines) => {
+        drawData.gcode = lines;
+        // drawData.lines
+
+        // document.querySelector('my-draw').lines=lines;
+        store.set(drawStore, { count: count++, gcode: lines });
+    })
+}
 const updateCurrentDir = async () => {
     const response = await window.versions.getCurrentDir();
     document.getElementById('dir').innerHTML = response;
@@ -67,7 +80,9 @@ const updateCurrentDir = async () => {
         el.onclick = () => {
             // debugger;
             document.getElementById('sel').innerHTML = o;
-
+            if (o.match(/\.nc$/gi)) {
+                setNCClick();
+            }
             // myPopup.show();
         };
         domFile.appendChild(el);
@@ -108,6 +123,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
     //     clipboard.writeText( document.getElementById('cmd').innerHTML);
     // }
 
+
     document.getElementById('setmap').onclick = () => {
         mapFile = document.getElementById('sel').innerHTML;
         document.getElementById('mapFile').innerHTML = mapFile;
@@ -123,19 +139,8 @@ window.addEventListener("DOMContentLoaded", (event) => {
 
     };
     document.getElementById('setnc').onclick = () => {
+        setNCClick();
 
-        ncFile = document.getElementById('sel').innerHTML;
-        document.getElementById('ncFile').innerHTML = ncFile;
-
-        var data = window.versions.getHeightMapContent(ncFile);
-        // setTimeout(()=>{
-        data.then((lines) => {
-            drawData.gcode = lines;
-            // drawData.lines
-
-            // document.querySelector('my-draw').lines=lines;
-            store.set(drawStore, { count: count++, gcode: lines });
-        })
     };
     document.getElementById('flatcam').onclick = () => {
         handleCall(async () => {
@@ -253,6 +258,7 @@ function draw(xxx) {
 
     }
     if (gcode || false) {
+        var cache = {};
         function extract(sig, i) {
             if (i < 0) return false;
             var re = new RegExp("(" + sig + ".[^\\sa-z]*)", "i");
@@ -260,8 +266,12 @@ function draw(xxx) {
             if (ma) {
                 return ma[0].substr(1);
             } else {
-
-                return extract(sig, i - 1);
+                if (typeof (cache[`${sig}${i - 1}`]) != "undefined") {
+                    return cache[`${sig}${i - 1}`];
+                }
+                var rs = extract(sig, i - 1);
+                cache[`${sig}${i - 1}`] = rs;
+                return rs;
             }
         }
         var gce = [];

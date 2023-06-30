@@ -106,7 +106,7 @@ my-draw {
 
 ::-webkit-scrollbar {
   /* margin-left: 3px; */
-  height: 12px;
+  height: 5px;
   width: 5px;
   background: #ddd;
 }
