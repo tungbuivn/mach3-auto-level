@@ -206,19 +206,42 @@ public class HeightMap : IRunableHandler
         _height = _grid[0].Tr.Y - _grid[0].Bl.Y;
 
         // handling gcode file
+        var sources=Directory.EnumerateFiles(curDir)
+            .Select(o=>Path.GetFileName(o))
+            .Where(filename =>
+            {
+                
+                return Regex.IsMatch(filename, "^gb_", RegexOptions.IgnoreCase)
+                       && Regex.IsMatch(filename, "\\.nc$", RegexOptions.IgnoreCase);
+                // return o;
+            }).ToArray();
 
-        var sources = new[]
-        {
-            "gb_cutout_nc.nc",
-            "gb_bottom_layer.nc",
-            "gb_drill06.nc",
-            "gb_drill08.nc",
-            "gb_milldrill08.nc",
-            "gb_milled_slots08.nc",
-            "gb_drill20.nc",
-            "gb_milled_slots20.nc",
-            "gb_top_layer.nc"
-        };
+        // var sources = new[]
+        // {
+        //     "gb_cutout_nc.nc",
+        //     "gb_bottom_layer.nc",
+        //     "gb_drill06.nc",
+        //     "gb_drill07.nc",
+        //     
+        //     "gb_drill08.nc",
+        //     "gb_drill09.nc",
+        //     "gb_drill10.nc",
+        //     "gb_drill11.nc",
+        //     "gb_drill12.nc",
+        //     "gb_drill13.nc",
+        //     "gb_drill14.nc",
+        //     "gb_drill15.nc",
+        //     "gb_drill16.nc",
+        //     "gb_drill17.nc",
+        //     "gb_drill18.nc",
+        //     "gb_drill19.nc",
+        //     "gb_drill20.nc",
+        //     "gb_milldrill08.nc",
+        //     "gb_milled_slots08.nc",
+        //     "gb_drill20.nc",
+        //     "gb_milled_slots20.nc",
+        //     "gb_top_layer.nc"
+        // };
         if (File.Exists(curDir))
         {
             curDir = Path.GetFullPath(curDir).ReplacePath();
@@ -281,11 +304,11 @@ public class HeightMap : IRunableHandler
 
         // process merger file after process done
         // is batch process ?
-        if (sources.Length > 1)
-        {
-            MergeFile(new[] { "alv_gb_drill08.nc","alv_gb_milldrill08.nc", "alv_gb_milled_slots08.nc" }, "alv_gb_drillmill08.nc", curDir);
-            MergeFile(new[] { "alv_gb_drill20.nc","alv_gb_milldrill08.nc", "alv_gb_milled_slots20.nc" }, "alv_gb_drillmill20.nc", curDir);
-        }
+        // if (sources.Length > 1)
+        // {
+        //     MergeFile(new[] { "alv_gb_drill08.nc","alv_gb_milldrill08.nc", "alv_gb_milled_slots08.nc" }, "alv_gb_drillmill08.nc", curDir);
+        //     MergeFile(new[] { "alv_gb_drill20.nc","alv_gb_milldrill08.nc", "alv_gb_milled_slots20.nc" }, "alv_gb_drillmill20.nc", curDir);
+        // }
     }
 
     private void MergeFile(string[] fs, string outname, string curDir)

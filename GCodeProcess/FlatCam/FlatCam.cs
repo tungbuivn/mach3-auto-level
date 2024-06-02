@@ -270,7 +270,6 @@ G0 Z2");
 M41 (Closes the opened log file)
 G0 Z5
 G0 X0 Y0
-M0 (Detach any clips used for probing)
 M30
 
 ");

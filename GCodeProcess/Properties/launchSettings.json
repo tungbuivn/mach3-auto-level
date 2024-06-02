@@ -3,15 +3,15 @@
   "profiles": {
     "FlatCam": {
       "commandName": "Project",
-      "commandLineArgs": "ger c:\\0pcb\\sdcard2\\",
+      "commandLineArgs": "ger c:\\0nc\\npn-open\\",
       "environmentVariables": {
         
       }
     },
     "HeightMap": {
       "commandName": "Project",
-      "commandLineArgs": "map mapfile",
-      "workingDirectory": "c:\\0pcb\\sdcard2\\",
+      "commandLineArgs": "map rpfmap",
+      "workingDirectory": "c:\\0nc\\npn-open\\",
       "environmentVariables": {
         
 

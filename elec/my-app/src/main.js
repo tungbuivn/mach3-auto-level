@@ -42,7 +42,7 @@ app.whenReady().then(() => {
     return process.cwd();
   })
   function runapp(...args) {
-    var result = child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe", args, {
+    var result = child.spawnSync("d:/0cnc-app/bin/GCodeProcess.exe", args, {
 
       encoding: 'utf-8',
 
@@ -51,32 +51,12 @@ app.whenReady().then(() => {
   }
   ipcMain.handle('runFlatCam', (evt, ...args) => {
     return runapp("ger", ...args)
-    // var result =child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["ger"],{
-
-    //   encoding: 'utf-8',
-
-    // });
-    // return [result.stdout.toString(), result.stderr.toString()];
   })
   ipcMain.handle('runHeightMap', (evt, ...args) => {
     return runapp("map", ...args)
-    // var p=args.map(o=>process.cwd()+"/"+o);
-    // var result = child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["map",...args],{
-
-    //   encoding: 'utf-8',
-
-    // })
-    // return [result.stdout.toString(), result.stderr.toString()];
   })
   ipcMain.handle('runFusion360', (evt, ...args) => {
     return runapp("360", ...args)
-
-    // var result =child.spawnSync("i:/0cnc-app/bin/GCodeProcess.exe",["360",...args],{
-
-    //   encoding: 'utf-8',
-
-    // });
-    // return [result.stdout.toString(), result.stderr.toString()];
   })
   ipcMain.handle('getFiles', () => {
     return fs.readdirSync(process.cwd()).filter(o => !fs.lstatSync(o).isDirectory());
