@@ -7,7 +7,7 @@ using GCodeProcess.Graphics;
 
 namespace GCodeProcess.HeightMap;
 
-public class HeightMap : IRunableHandler
+public partial class HeightMap : IRunableHandler
 {
     private readonly HeightMapOptions _options;
     private readonly GCodeFactory _gCodeFactory;
@@ -105,18 +105,18 @@ public class HeightMap : IRunableHandler
     public void Run()
     {
         var curDir = _options.Directory.ReplacePath();
-        var fileName = _options.MapFile;
+        var fileName = _options.MapFile??"";
         if (!File.Exists(fileName))
         {
         }
 
-        FixRpfMap(_options.MapFile);
+        FixRpfMap(fileName);
 
 
         _points = File.ReadAllLines(_options.MapFile!)
             .Select(o =>
             {
-                var ar = Regex.Split(o, "[^0-9\\.\\+\\-]").Where(so => !string.IsNullOrEmpty(so)).ToArray();
+                var ar = Regex.Split(o,"[^0-9\\.\\+\\-]").Where(so => !string.IsNullOrEmpty(so)).ToArray();
                 if (ar.Length > 2)
                     return new Point3D(ar[0].GetDouble(), ar[1].GetDouble(), ar[2].GetDouble());
                 return null;
@@ -197,7 +197,7 @@ public class HeightMap : IRunableHandler
             }
         }
 
-        if ((_points.Count % TotalCol != 0) || (_points.Count % TotalRow != 0))
+        if (_points.Count % TotalCol != 0 || _points.Count % TotalRow != 0)
         {
             throw new Exception("So luong diem grid khong dung");
         }
@@ -207,14 +207,13 @@ public class HeightMap : IRunableHandler
 
         // handling gcode file
         var sources=Directory.EnumerateFiles(curDir)
-            .Select(o=>Path.GetFileName(o))
-            .Where(filename =>
-            {
-                
-                return Regex.IsMatch(filename, "^gb_", RegexOptions.IgnoreCase)
-                       && Regex.IsMatch(filename, "\\.nc$", RegexOptions.IgnoreCase);
-                // return o;
-            }).ToArray();
+           
+            .Select(Path.GetFileName) 
+            .Where(s=>!string.IsNullOrEmpty(s))
+            .Where(filename => Regex.IsMatch(filename ?? string.Empty,"^gb_", RegexOptions.IgnoreCase)
+                               && Regex.IsMatch(filename ?? string.Empty,"\\.nc$", RegexOptions.IgnoreCase))
+            .Select(s=>s??"")
+            .ToArray();
 
         // var sources = new[]
         // {
@@ -357,7 +356,7 @@ public class HeightMap : IRunableHandler
             {
                 n = item;
             }
-            else if ((n.Y.IsEqual(item.Y, 0.1)))
+            else if (n.Y.IsEqual(item.Y, 0.1))
             {
                 count++;
             }
@@ -400,9 +399,9 @@ public class HeightMap : IRunableHandler
         var rs = new List<Point3D>() { p1 };
         // check if not vertical line
         if (!p1.X.IsEqual(p2.X) || !p1.Y.IsEqual(p2.Y))
-            while (len < d && !(len.IsEqual(d)))
+            while (len < d && !len.IsEqual(d))
             {
-                var np = v.Scale(len) + p1;
+                var np = (v.Scale(len) + p1.ToVector()).ToPoint();
                 rs.Add(np);
                 len += _setting.MaxSegmentLength;
             }
@@ -423,7 +422,7 @@ public class HeightMap : IRunableHandler
 
     private int FindRange(double val, List<double> data)
     {
-        int rs = Int32.MaxValue;
+        int rs = int.MaxValue;
 
         for (int i = 1; i < data.Count; i++)
         {
@@ -454,6 +453,7 @@ public class HeightMap : IRunableHandler
 
         if (gr != null && gr.Bl.X <= p.X && gr.Bl.Y <= p.Y && gr.Tr.X >= p.X && gr.Tr.Y >= p.Y)
         {
+           
             var bl = new BilinearGraphic();
             var ps = bl.Interpolate(gr.Bl, gr.Br, gr.Tr, gr.Tl, p);
             p.Z += ps.Z;
@@ -462,4 +462,11 @@ public class HeightMap : IRunableHandler
 
         return p;
     }
+
+    // [GeneratedRegex("^gb_", RegexOptions.IgnoreCase, "en-US")]
+    // private static partial Regex StartWithGb();
+    // [GeneratedRegex("\\.nc$", RegexOptions.IgnoreCase, "en-US")]
+    // private static partial Regex EndWithNc();
+    // [GeneratedRegex("[^0-9\\.\\+\\-]")]
+    // private static partial Regex SplitNumber();
 }

@@ -3,7 +3,7 @@
   "profiles": {
     "FlatCam": {
       "commandName": "Project",
-      "commandLineArgs": "ger c:\\0nc\\npn-open\\",
+      "commandLineArgs": "ger c:\\0nc\\touch-kailh\\part1\\",
       "environmentVariables": {
         
       }

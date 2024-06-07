@@ -11,7 +11,8 @@ public class Vector3D:Vector2D
       
         DZ = p2.Z - p1.Z;
     }
-    public static Point3D operator +(Vector3D p2,Point3D p1) => new Point3D(p1.X+p2.DX,p1.Y+p2.DY,p1.Z+p2.DZ);
+    // public static Point3D operator +(Vector3D p2,Point3D p1) => new Point3D(p1.X+p2.DX,p1.Y+p2.DY,p1.Z+p2.DZ);
+    public static Vector3D operator +(Vector3D p2,Vector3D p1) => new Vector3D(p1.DX+p2.DX,p1.DY+p2.DY,p1.DZ+p2.DZ);
 
     public Vector3D(double dx, double dy, double dz=0) : base(dx,dy)
     {
@@ -41,5 +42,9 @@ public class Vector3D:Vector2D
         return new Vector3D(dist * DX, dist * DY,dist*DZ);
     }
 
-   
+
+    public Point3D ToPoint()
+    {
+        return new Point3D(DX, DY, DZ);
+    }
 }

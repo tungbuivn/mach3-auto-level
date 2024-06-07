@@ -6,7 +6,7 @@ public class FlatCamSettings
     public string Beta { get; set; } = null!;
     public double CutOutDiameter { get; set; }
     public float PcbDiameter { get; set; }
-    public float[] DrillTools { get; set; }
+    public float[] DrillTools { get; set; } = new float[]{};
     public int SpindleSpeed { get; set; }
     public bool CleanPcb { get; set; }
     public double DrillDepth { get; set; }

@@ -144,11 +144,15 @@ write_gcode milled_slots{key}_nc {Dir}/gb_milled_slots{key}.nc
     public string GetScriptDrillMill()
     {
         var millDrill=GetMillDrilling();
-        var drill = string.Join("\n", 
-            _tools.GroupBy(o => o.DrillGroup).Select(g =>
+        var drill=string.Join("\n", _settingsFlatCam.DrillTools.Select(t =>
         {
-            return GetDrillingByTool(g.ToList(), g.Key);
+            return GetDrillingByTool(new List<ToolInfo>(), $"{(int)(t*10)}");
         }));
+        // var drill = string.Join("\n", 
+        //     _tools.GroupBy(o => o.DrillGroup).Select(g =>
+        // {
+        //     return GetDrillingByTool(g.ToList(), g.Key);
+        // }));
         var mill = string.Join("\n", 
             _tools.GroupBy(o => o.MillingGroup)
                 .Where(g=>!string.IsNullOrEmpty(g.Key))

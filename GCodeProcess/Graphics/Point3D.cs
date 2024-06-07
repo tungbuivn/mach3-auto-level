@@ -33,4 +33,9 @@ public class Point3D: Point2D
         
         Z = z;
     }
+
+    public Vector3D ToVector()
+    {
+        return new Vector3D(X, Y, Z);
+    }
 }

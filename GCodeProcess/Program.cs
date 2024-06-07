@@ -1,4 +1,5 @@
-﻿using GCodeProcess;
+﻿using System.Diagnostics;
+using GCodeProcess;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
