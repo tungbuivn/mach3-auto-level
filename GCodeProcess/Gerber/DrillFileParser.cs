@@ -18,7 +18,7 @@ public class DrillFileParser
     string GetMillDrilling()
     {
         var toolDrillDia = _settingsFlatCam.DrillTools.Last();
-        var toolsDias = string.Join(",", _tools.Where(o=>(int)o.Size*100>(int)toolDrillDia*100).Select(o => o.Size.ToString("0.000")));
+        var toolsDias = string.Join(",", _tools.Where(o=>(int)(o.Size * 100)>(int)(toolDrillDia * 100)).Select(o => o.Size.ToString("0.000")));
         var key = ((int)toolDrillDia * 10).ToString().PadLeft(2, '0');
         if (!string.IsNullOrEmpty(toolsDias))
         {
@@ -146,7 +146,8 @@ write_gcode milled_slots{key}_nc {Dir}/gb_milled_slots{key}.nc
         var millDrill=GetMillDrilling();
         var drill=string.Join("\n", _settingsFlatCam.DrillTools.Select(t =>
         {
-            return GetDrillingByTool(new List<ToolInfo>(), $"{(int)(t*10)}");
+            var group = $"{(int)(t * 10)}".PadLeft(2,'0');
+            return GetDrillingByTool(new List<ToolInfo>(), group);
         }));
         // var drill = string.Join("\n", 
         //     _tools.GroupBy(o => o.DrillGroup).Select(g =>

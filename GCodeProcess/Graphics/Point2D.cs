@@ -2,6 +2,7 @@
 
 public class Point2D
 {
+    public bool IsDeleted = false;
     public double X { get; set; }
     public double Y { get; set; }
     

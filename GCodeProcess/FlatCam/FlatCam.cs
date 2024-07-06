@@ -82,7 +82,7 @@ write_gcode top_nc {dir}/gb_top_layer.nc
 
         var cleanPcb = _settingsFlatCam.CleanPcb
             ? $@"
-ncc mg_geo -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname geo_bottom_layer
+ncc bottom_layer -method Seed -tooldia {_settingsFlatCam.PcbDiameter} -overlap 25 -connect 1 -contour 1 -all -outname geo_bottom_layer
 cncjob geo_bottom_layer -dia {_settingsFlatCam.PcbDiameter} -z_cut -0.1 -z_move {_settingsFlatCam.ZClearance} -spindlespeed {_settingsFlatCam.SpindleSpeed} -feedrate {_settingsFlatCam.XyFetchRateCopperClear} -feedrate_z {_settingsFlatCam.ZFetchCopperClear} -pp default -outname ncc_bottom_layer 
 write_gcode ncc_bottom_layer {dir}/gb_bottom_layer.nc
 "
@@ -103,7 +103,7 @@ mirror drill -axis Y  -box cutout
 
 #note this must be last call on mirror
 mirror cutout -axis Y  -box cutout
-join_geometry mg_geo cutout bottom_layer
+#join_geometry mg_geo cutout bottom_layer
 {cleanPcb}
 
 #cutout
@@ -238,6 +238,12 @@ Print #iFileNo,  {q}{q}
         StringBuilder sb = new StringBuilder();
         // var (x, y) = (min.X, max.Y);
         sb.Append($@"
+( T1: vmill      -6.5875 )
+( T2: drill0.6   -8.0219 )
+( T3: drill0.8   -7.9860 )
+( T4: drill1.0   -8.2453 ) 
+( T5: drill2.0   -7.9672 ) 
+( T6: cut2.5     -4.8688 )
 G90 G21 S{_settingsFlatCam.SpindleSpeed} G17
 
 M0 (Attach probe wires and clips that need attaching)
@@ -259,7 +265,7 @@ G0 Z2");
             {
                 sb.Append($@"
 G1 X{(min.X+w*(rev?numx-j:j)).Fmt()} Y{(min.Y+h*i).Fmt()} F{_settingsFlatCam.XyProbeFetchRate}
-G31 Z-1 F{_settingsFlatCam.ZProbeFetchRate}
+G31 Z-2 F{_settingsFlatCam.ZProbeFetchRate}
 G0 Z2");
             }
 

@@ -25,13 +25,13 @@ public partial class HeightMap : IRunableHandler
     private double _height;
 
     private readonly List<Rect3D> _grid = new();
-    private List<Point3D?> _points = null!;
+    private List<Point3D> _points = null!;
     private Point2D _min = null!;
 
     void FixRpfMap(string mapFile)
     {
         var pa = Path.GetFullPath(mapFile);
-        var dir = Path.GetDirectoryName(pa).ReplacePath();
+        var dir = (Path.GetDirectoryName(pa) ?? string.Empty).ReplacePath();
         var filename = $"{dir}/rpf.nc";
         if (!File.Exists(filename)) return;
         Console.WriteLine($"Found rpc.nc ! Process repair \"{mapFile}\" file!");
@@ -108,23 +108,24 @@ public partial class HeightMap : IRunableHandler
         var fileName = _options.MapFile??"";
         if (!File.Exists(fileName))
         {
+            throw new Exception("map file not found");
         }
 
         FixRpfMap(fileName);
 
-
-        _points = File.ReadAllLines(_options.MapFile!)
+       
+        _points = File.ReadAllLines(fileName)
             .Select(o =>
             {
-                var ar = Regex.Split(o,"[^0-9\\.\\+\\-]").Where(so => !string.IsNullOrEmpty(so)).ToArray();
-                if (ar.Length > 2)
-                    return new Point3D(ar[0].GetDouble(), ar[1].GetDouble(), ar[2].GetDouble());
-                return null;
+                var ar = Regex.Split(o, "[^0-9\\.\\+\\-]").Where(so => !string.IsNullOrEmpty(so)).ToArray();
+               var rs= ar.Length > 2? new Point3D(ar[0].GetDouble(), ar[1].GetDouble(), ar[2].GetDouble()): new Point3D(){IsDeleted = true};
+               return rs;
             })
-            .Where(o => o != null)
-            .OrderBy(o => o!.Y)
-            .ThenBy(o => o!.X)
+            .Where(o => !o.IsDeleted)
+            .OrderBy(o => o.Y)
+            .ThenBy(o => o.X)
             .ToList();
+            
 
         int countY = CountRow(_points!);
         TotalRow = countY;
