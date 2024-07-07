@@ -92,14 +92,19 @@ write_gcode drill{key} {Dir}/gb_drill{key}.nc
         // return string.Join("\n",lst);
     }
 
-    string GetMillingByTool(List<ToolInfo> tl, string key)
+    string GetMillingByTool(List<ToolInfo> tl, int toolDia,int minDia,int maxDia,string key)
     {
         // ignore all milling with diameter less than 0.8mm
-        if (key == "06") return "";
-        if (key == "08") return "";
-        var toolMill = (key == "10" ? 1.0 : 2.0);
-        var toolsDias = string.Join(",", tl.Where(o=>o.HasMillingSlot).Select(o => o.Size).Distinct());
-        var dpp = toolMill<2?0.1:0.2;
+       
+        var toolMill = toolDia*1.0/10;
+        var toolsDias = string.Join(",", tl.Where(o=>o.HasMillingSlot)
+            .Where(t =>
+            {
+                var ts = (int)(t.Size * 10);
+                return ts > minDia && ts <= maxDia;
+            })
+            .Select(o => o.Size).Distinct());
+        var dpp = 0.1;
         if (string.IsNullOrEmpty(toolsDias)) return "";
         
         // var lst = tl.Select(o =>
@@ -144,24 +149,42 @@ write_gcode milled_slots{key}_nc {Dir}/gb_milled_slots{key}.nc
     public string GetScriptDrillMill()
     {
         var millDrill=GetMillDrilling();
-        var drill=string.Join("\n", _settingsFlatCam.DrillTools.Select(t =>
+        var drill=string.Join("\n", _settingsFlatCam.DrillTools.Select((t,i) =>
         {
             var group = $"{(int)(t * 10)}".PadLeft(2,'0');
-            return GetDrillingByTool(new List<ToolInfo>(), group);
+            var minDia = 0;
+            var maxDia = 0;
+            if (i == 0)
+            {
+                minDia = 0;
+                maxDia = (int)(t*10);
+            } else if (i==_settingsFlatCam.DrillTools.Length-1)
+            {
+                minDia = (int)(t * 10);
+                maxDia = 999;
+            }
+            else
+            {
+                minDia = (int)(10 * _settingsFlatCam.DrillTools[i - 1]);
+                maxDia = (int)(t * 10);
+            }
+            return GetDrillingByTool(new List<ToolInfo>(), group) + "\n"+
+                   GetMillingByTool(_tools,(int)(t*10),minDia,maxDia,group);
         }));
         // var drill = string.Join("\n", 
         //     _tools.GroupBy(o => o.DrillGroup).Select(g =>
         // {
         //     return GetDrillingByTool(g.ToList(), g.Key);
         // }));
-        var mill = string.Join("\n", 
-            _tools.GroupBy(o => o.MillingGroup)
-                .Where(g=>!string.IsNullOrEmpty(g.Key))
-                // .Where(g=>!(new[]{"06","08"}.Contains(g.Key)))
-                .Select(g =>
-            {
-                return GetMillingByTool(g.ToList(), g.Key);
-            }));
+        var mill = "";
+            // string.Join("\n", 
+            // _tools.GroupBy(o => o.MillingGroup)
+            //     .Where(g=>!string.IsNullOrEmpty(g.Key))
+            //     // .Where(g=>!(new[]{"06","08"}.Contains(g.Key)))
+            //     .Select(g =>
+            // {
+            //     return GetMillingByTool(g.ToList(), g.Key);
+            // }));
        
 
         return $"{millDrill}\n{drill}\n{mill}";

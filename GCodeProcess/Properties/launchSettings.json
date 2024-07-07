@@ -3,7 +3,7 @@
   "profiles": {
     "FlatCam": {
       "commandName": "Project",
-      "commandLineArgs": "ger c:\\0nc\\fan24v\\",
+      "commandLineArgs": "ger c:\\0nc\\fan24v\\controls",
       "environmentVariables": {
         
       }

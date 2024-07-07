@@ -91,11 +91,13 @@ write_gcode ncc_bottom_layer {dir}/gb_bottom_layer.nc
 set_sys {q}units{q} {q}MM{q}
 set_sys {q}cncjob_plot{q} false
 set_sys {q}tools_drill_multidepth{q} false
-set_sys {q}tools_drill_drill_slots{q} true
+#set_sys {q}tools_drill_drill_slots{q} true
 set_sys {q}tools_drill_last_drill{q} false
 #set_sys {q}geometry_plot{q} false
 set_sys {q}tools_drill_depthperpass{q} 5
 set_sys {q}tools_drill_cutz{q} -2.2
+set_sys {q}excellon_slot_tooldia{q} 1.0
+set_sys {q}excellon_tooldia{q} 1.0
 open_gerber {dir}/Gerber_BoardOutlineLayer.GKO -outname cutout
 open_gerber {dir}/Gerber_BottomLayer.GBL -outname bottom_layer
 #open top layer gerber
